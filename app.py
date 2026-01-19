@@ -1,6 +1,7 @@
 # app.py
 from flask import Flask, render_template, request, redirect, url_for, flash
 from config import db
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 
@@ -10,9 +11,12 @@ app.secret_key = "12343454565656565"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tournament.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+migrate = Migrate(app, db)  # Ajoutez cette ligne pour configurer Flask-Migrate
+
+
 db.init_app(app)
 
-from models.team import Team
+from models.team import Team, Player
 from models.match import Match
 from models.tournament import Tournament
 from sqlalchemy.orm import aliased 
@@ -23,40 +27,33 @@ tournament = Tournament()
 def index():
     return render_template('index.html')
 
-@app.route('/teams', methods=['GET', 'POST'])
-def teams():
-    if request.method == 'POST':
-        team_name = request.form.get('team_name')
-        player1_name = request.form.get('player1_name')
-        player2_name = request.form.get('player2_name')
-
-        if team_name and player1_name and player2_name:
-            if not tournament.add_team(team_name, player1_name, player2_name):
-                error = "Impossible d'ajouter l'équipe : le tournoi a déjà commencé ou l'équipe existe déjà."
-                return render_template('teams.html', teams=tournament.get_teams(), error=error)
-
-        return redirect(url_for('teams'))
-
-    return render_template('teams.html', teams=tournament.get_teams())
-
-
 
 @app.route('/team/<team_name>', methods=['GET', 'POST'])
 def team_detail(team_name):
-    team = next((t for t in tournament.get_teams() if t.name == team_name), None)
+    team = Team.query.filter_by(name=team_name).first()
     if not team:
-        return redirect(url_for('teams'))
+        return redirect(url_for('admin'))
 
     if request.method == 'POST':
-        player_name = request.form.get('player_name')
-        if player_name and len(team.players) < 2:  # Vérifiez que l'équipe a moins de 2 joueurs
-            if team.add_player(player_name):
-                flash(f"Le joueur {player_name} a été ajouté à l'équipe {team.name} avec succès.", 'success')
+        if 'add_player' in request.form:
+            player_name = request.form.get('player_name')
+            if player_name and len(team.players) < 2:
+                if team.add_player(player_name):
+                    flash(f"Le joueur {player_name} a été ajouté à l'équipe {team.name} avec succès.", 'success')
+                else:
+                    flash(f"Impossible d'ajouter le joueur {player_name} à l'équipe {team.name}.", 'error')
             else:
-                flash(f"Impossible d'ajouter le joueur {player_name} à l'équipe {team.name}.", 'error')
+                flash(f"L'équipe a déjà 2 joueurs.", 'error')
+            return redirect(url_for('team_detail', team_name=team_name))
+        elif 'remove_player' in request.form:
+            player_name = request.form.get('player_name')
+            if player_name:
+                if team.remove_player(player_name):
+                    flash(f"Le joueur {player_name} a été retiré de l'équipe {team.name} avec succès.", 'success')
+                else:
+                    flash(f"Impossible de retirer le joueur {player_name} de l'équipe {team.name}.", 'error')
             return redirect(url_for('team_detail', team_name=team_name))
 
-    # Filtrer les matchs joués par cette équipe
     team_matches = []
     for match in Match.query.filter(Match.score1.isnot(None)).all():
         if match.team1_id == team.id or match.team2_id == team.id:
@@ -72,6 +69,9 @@ def team_detail(team_name):
             })
 
     return render_template('team_detail.html', team=team, matches=team_matches)
+
+
+
 
 
 
@@ -172,40 +172,34 @@ def ranking():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    error = None
-    success = None
     if request.method == 'POST':
         if 'reset_tournament' in request.form:
             tournament.reset_tournament()
+            flash("Le tournoi a été réinitialisé.", 'success')
             return redirect(url_for('admin'))
         elif 'start_tournament' in request.form:
             if len(tournament.get_teams()) % 2 != 0:
-                error = "Le nombre d'équipes doit être pair pour commencer le tournoi."
-                return render_template('admin.html', teams=tournament.get_teams(), error=error)
-            if not tournament.generate_matches():
-                error = "Impossible de générer les matchs."
-                return render_template('admin.html', teams=tournament.get_teams(), error=error)
-            return redirect(url_for('matches'))
-        elif 'remove_team' in request.form:
-            remove_team = request.form.get('remove_team')
-            if remove_team:
-                if not tournament.remove_team(remove_team):
-                    error = f"L'équipe {remove_team} a déjà joué des matchs et ne peut pas être retirée."
-            return redirect(url_for('admin'))
-        elif 'remove_player' in request.form:
-            team_name = request.form.get('team_name')
-            player_name = request.form.get('player_name')
-            if team_name and player_name:
-                result = tournament.remove_player_from_team(team_name, player_name)
-                if not result:
-                    flash(f"Impossible de retirer le joueur {player_name} de l'équipe {team_name}.", 'error')
-                else:
-                    flash(f"Le joueur {player_name} a été retiré de l'équipe {team_name} avec succès.", 'success')
-            return redirect(url_for('admin'))
+                flash("Le nombre d'équipes doit être pair pour commencer le tournoi.", 'error')
+                return redirect(url_for('admin'))
 
-    # Recharger les équipes depuis la base de données
+            # Vérifiez si c'est le premier tour
+            if not Match.query.first():
+                # Premier tour : matchs aléatoires
+                if not tournament.generate_first_round_matches():
+                    flash("Impossible de générer les matchs pour le premier tour.", 'error')
+                    return redirect(url_for('admin'))
+                flash("Les matchs du premier tour ont été générés aléatoirement avec succès.", 'success')
+            else:
+                # Tours suivants : matchs selon le classement
+                if not tournament.generate_matches():
+                    flash("Impossible de générer les matchs pour les tours suivants.", 'error')
+                    return redirect(url_for('admin'))
+                flash("Les matchs ont été générés selon le classement avec succès.", 'success')
+            return redirect(url_for('matches'))
+
     teams = tournament.get_teams()
     return render_template('admin.html', teams=teams)
+
 
 
 if __name__ == '__main__':

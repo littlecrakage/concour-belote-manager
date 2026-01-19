@@ -2,53 +2,45 @@
 
 {% block content %}
     <h1 class="mb-4">{{ team.name }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <div class="row">
         <div class="col-md-6">
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">Ajouter un Joueur</h5>
-                    {% if team.players|length < 2 %}
-                        <form method="POST">
-                            <div class="mb-3">
-                                <label for="player_name" class="form-label">Nom du joueur</label>
-                                <input type="text" class="form-control" id="player_name" name="player_name" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Ajouter</button>
-                        </form>
-                    {% else %}
-                        <p>Cette équipe a déjà 2 joueurs.</p>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="card mb-4">
-                <div class="card-body">
                     <h5 class="card-title">Joueurs</h5>
+                    {% if team.players|length < 2 %}
+                        <form method="POST" class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="player_name" placeholder="Nom du joueur" required>
+                                <button type="submit" name="add_player" class="btn btn-primary">Ajouter</button>
+                            </div>
+                        </form>
+                    {% endif %}
                     <ul class="list-group">
                         {% for player in team.players %}
-                            <li class="list-group-item">{{ player }}</li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ player.name }}
+                                <form method="POST" class="m-0">
+                                    <input type="hidden" name="player_name" value="{{ player.name }}">
+                                    <button type="submit" name="remove_player" class="btn btn-sm btn-danger">Retirer</button>
+                                </form>
+                            </li>
                         {% else %}
                             <li class="list-group-item">Aucun joueur</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
+            <!-- Autres sections -->
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Statistiques</h5>
-                    <ul class="list-group">
-                        <li class="list-group-item">Points : {{ team.points }}</li>
-                        <li class="list-group-item">Matchs joués : {{ team.matches_played }}</li>
-                        <li class="list-group-item">Points pour : {{ team.points_for }}</li>
-                        <li class="list-group-item">Points contre : {{ team.points_against }}</li>
-                        <li class="list-group-item">Différence : {{ team.points_for - team.points_against }}</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Tous les matchs joués</h5>
+                    <h5 class="card-title">Matchs Joués</h5>
                     <table class="table">
                         <thead>
                             <tr>
@@ -75,5 +67,5 @@
             </div>
         </div>
     </div>
-    <a href="{{ url_for('teams') }}" class="btn btn-secondary mt-3">Retour aux équipes</a>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">Retour à l'administration</a>
 {% endblock %}

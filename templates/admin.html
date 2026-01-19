@@ -2,14 +2,27 @@
 
 {% block content %}
     <h1 class="mb-4">Administration du Tournoi</h1>
-    {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-    {% if success %}
-        <div class="alert alert-success">{{ success }}</div>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <div class="row">
         <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Ajouter une Équipe</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="team_name" class="form-label">Nom de l'équipe</label>
+                            <input type="text" class="form-control" id="team_name" name="team_name" required>
+                        </div>
+                        <button type="submit" name="add_team" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+            </div>
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Réinitialiser le Tournoi</h5>
@@ -45,34 +58,6 @@
                     </form>
                 </div>
             </div>
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Retirer un Joueur d'une Équipe</h5>
-                    <p class="card-text">Retirez un joueur d'une équipe.</p>
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="team_name" class="form-label">Équipe</label>
-                            <select class="form-select" id="team_name" name="team_name" required>
-                                {% for team in teams %}
-                                    <option value="{{ team.name }}">{{ team.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="player_name" class="form-label">Joueur à retirer</label>
-                            <select class="form-select" id="player_name" name="player_name" required>
-                                <option value="" selected disabled>Choisir un joueur</option>
-                                {% for team in teams %}
-                                    {% for player in team.players %}
-                                        <option value="{{ player }}" data-team="{{ team.name }}">{{ player }} ({{ team.name }})</option>
-                                    {% endfor %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" name="remove_player" class="btn btn-danger">Retirer le joueur</button>
-                    </form>
-                </div>
-            </div>
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Équipes Existantes</h5>
@@ -82,13 +67,21 @@
                             <tr>
                                 <th>Équipe</th>
                                 <th>Joueurs</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for team in teams %}
                                 <tr>
                                     <td><a href="{{ url_for('team_detail', team_name=team.name) }}">{{ team.name }}</a></td>
-                                    <td>{{ team.players|join(', ') if team.players else 'Aucun' }}</td>
+                                    <td>
+                                        {% if team.players %}
+                                            {{ team.players|map(attribute='name')|join(', ') }}
+                                        {% else %}
+                                            Aucun
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{{ url_for('team_detail', team_name=team.name) }}" class="btn btn-sm btn-info">Voir</a></td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -97,19 +90,4 @@
             </div>
         </div>
     </div>
-<script>
-    document.getElementById('team_name').addEventListener('change', function() {
-        const teamName = this.value;
-        const playerSelect = document.getElementById('player_name');
-        for (let i = 0; i < playerSelect.options.length; i++) {
-            const option = playerSelect.options[i];
-            if (option.getAttribute('data-team') === teamName || option.value === '') {
-                option.style.display = 'block';
-            } else {
-                option.style.display = 'none';
-            }
-        }
-        playerSelect.value = '';
-    });
-</script>
 {% endblock %}

@@ -1,13 +1,15 @@
 from app import db
 
 class Team(db.Model):
+    __tablename__ = 'teams'
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     points = db.Column(db.Integer, default=0)
     matches_played = db.Column(db.Integer, default=0)
     points_for = db.Column(db.Integer, default=0)
     points_against = db.Column(db.Integer, default=0)
-    players = db.relationship('Player', backref='team', lazy=True)
+    players = db.Column(db.JSON, default=[])  # Assurez-vous que c'est bien un champ JSON
 
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -3,6 +3,8 @@ from models.team import Team
 from models.match import Match
 from datetime import datetime
 
+import random
+
 class Tournament:
     def add_team(self, name, player1_name, player2_name):
         if self.has_started():
@@ -20,7 +22,8 @@ class Tournament:
         return Match.query.filter(Match.score1.isnot(None)).first() is not None
 
     def get_teams(self):
-        return Team.query.all()
+        """Récupère toutes les équipes triées par nom."""
+        return Team.query.order_by(Team.name).all()
 
     def get_matches(self):
         return Match.query.all()
@@ -40,41 +43,19 @@ class Tournament:
             Team.points_against.asc()
         ).all()
 
-    def generate_matches(self):
-        teams = self.get_ranking()
-
-        if len(teams) < 2:
-            return False
-
-        if len(teams) % 2 != 0:
-            return False
-
-        # Supprimer les matchs existants non joués
-        Match.query.filter(Match.score1.is_(None)).delete()
-        db.session.commit()
-
-        # Générer les matchs : 1er vs 2ème, 3ème vs 4ème, etc.
-        for i in range(0, len(teams), 2):
-            if i + 1 < len(teams):
-                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id)
-                db.session.add(match)
-
-        db.session.commit()
-        return True
-
     def remove_team(self, team_name):
         team = Team.query.filter_by(name=team_name).first()
         if not team:
             return False
 
-        # Vérifier si l'équipe a joué des matchs
+        # Vérifiez si l'équipe a déjà joué des matchs
         if Match.query.filter(
-            ((Match.team1_id == team.id) | (Match.team2_id == team.id)) &
-            (Match.score1.isnot(None))
+            (Match.team1_id == team.id) | (Match.team2_id == team.id),
+            Match.score1.isnot(None)
         ).first():
-            return False  # L'équipe a déjà joué des matchs
+            return False
 
-        # Supprimer l'équipe
+        # Supprimez l'équipe (les joueurs seront supprimés automatiquement grâce à la relation)
         db.session.delete(team)
         db.session.commit()
         return True
@@ -120,15 +101,33 @@ class Tournament:
 
         db.session.commit()
         return True
-    
-    def remove_player_from_team(self, team_name, player_name):
-        team = Team.query.filter_by(name=team_name).first()
-        if not team:
-            return False
 
-        # Normaliser le nom du joueur
-        player_name = str(player_name)
-        return team.remove_player(player_name)
+    def generate_first_round_matches(self):
+        teams = self.get_teams()
+        if len(teams) % 2 != 0:
+            return False  # Le nombre d'équipes doit être pair
+
+        # Mélangez les équipes de manière aléatoire
+        random.shuffle(teams)
+
+        # Créez des matchs en appariant les équipes aléatoirement
+        for i in range(0, len(teams), 2):
+            team1 = teams[i]
+            team2 = teams[i + 1]
+
+            # Vérifiez qu'un match entre ces deux équipes n'existe pas déjà
+            existing_match = Match.query.filter(
+                ((Match.team1_id == team1.id) & (Match.team2_id == team2.id)) |
+                ((Match.team1_id == team2.id) & (Match.team2_id == team1.id))
+            ).first()
+
+            if not existing_match:
+                match = Match(team1_id=team1.id, team2_id=team2.id)
+                db.session.add(match)
+
+        db.session.commit()
+        return True
+
 
 
 

@@ -25,7 +25,13 @@
                             <td>{{ team.points_for - team.points_against }}</td>
                             <td>{{ team.points_against }}</td>
                             <td>{{ team.matches_played }}</td>
-                            <td>{{ team.players|join(', ') if team.players else 'Aucun' }}</td>
+                            <td>
+                                {% if team.players %}
+                                    {{ team.players|map(attribute='name')|join(', ') }}
+                                {% else %}
+                                    Aucun joueur
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
