@@ -1,0 +1,29 @@
+# Environnements virtuels
+env/
+venv/
+.venv
+
+# Fichiers Python compilés
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de données locale
+tournament.db
+
+# Fichiers de migration temporaires
+migrations/*.pyc
+
+# Fichiers de configuration locale
+config.py
+config_db.py
+.env
+
+# Fichiers temporaires
+*.swp
+*.swo
+.DS_Store
+
+# Cache de l'IDE (par exemple PyCharm)
+.idea/
+.vscode/
