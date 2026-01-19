@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-4">Matchs</h1>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Générer le prochain tour</h5>
+                    <form method="POST">
+                        <button type="submit" name="generate_next_round" class="btn btn-primary">Générer le prochain tour</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Enregistrer un résultat</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="match" class="form-label">Choisir un match non joué</label>
+                            <select class="form-select" id="match" name="match" required>
+                                {% for match in unplayed_matches %}
+                                    <option value="{{ match.team1 }} vs {{ match.team2 }}">{{ match.team1 }} vs {{ match.team2 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="score1" class="form-label">Score Équipe 1</label>
+                            <input type="number" class="form-control" id="score1" name="score1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="score2" class="form-label">Score Équipe 2</label>
+                            <input type="number" class="form-control" id="score2" name="score2" required>
+                        </div>
+                        <button type="submit" name="record_match" class="btn btn-primary">Enregistrer le score</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Matchs non joués</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Équipe 1</th>
+                                <th>Équipe 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in unplayed_matches %}
+                                <tr>
+                                    <td>{{ match.team1 }}</td>
+                                    <td>{{ match.team2 }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="2">Aucun match non joué</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Matchs joués</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Équipe 1</th>
+                                <th>Équipe 2</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in played_matches %}
+                                <tr>
+                                    <td>{{ match.team1 }}</td>
+                                    <td>{{ match.team2 }}</td>
+                                    <td>{{ match.score1 }} - {{ match.score2 }}</td>
+                                    <td>{{ match.date }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4">Aucun match joué</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

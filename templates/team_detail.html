@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-4">{{ team.name }}</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Ajouter un Joueur</h5>
+                    {% if team.players|length < 2 %}
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="player_name" class="form-label">Nom du joueur</label>
+                                <input type="text" class="form-control" id="player_name" name="player_name" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                        </form>
+                    {% else %}
+                        <p>Cette équipe a déjà 2 joueurs.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Joueurs</h5>
+                    <ul class="list-group">
+                        {% for player in team.players %}
+                            <li class="list-group-item">{{ player }}</li>
+                        {% else %}
+                            <li class="list-group-item">Aucun joueur</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiques</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">Points : {{ team.points }}</li>
+                        <li class="list-group-item">Matchs joués : {{ team.matches_played }}</li>
+                        <li class="list-group-item">Points pour : {{ team.points_for }}</li>
+                        <li class="list-group-item">Points contre : {{ team.points_against }}</li>
+                        <li class="list-group-item">Différence : {{ team.points_for - team.points_against }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tous les matchs joués</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Adversaire</th>
+                                <th>Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in matches %}
+                                <tr>
+                                    <td>{{ match.opponent }}</td>
+                                    <td>{{ match.score1 }} - {{ match.score2 }}</td>
+                                    <td>{{ match.date if match.date else 'Non enregistré' }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3">Aucun match joué</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{{ url_for('teams') }}" class="btn btn-secondary mt-3">Retour aux équipes</a>
+{% endblock %}
