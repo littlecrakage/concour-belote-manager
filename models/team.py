@@ -1,5 +1,5 @@
 # models/team.py
-from config import db
+from extensions import db
 
 class Team(db.Model):
     __tablename__ = 'teams'

@@ -2,16 +2,19 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from config import db
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+from sqlalchemy import and_
+load_dotenv()
 
 app = Flask(__name__)
 
-import secrets
 app.secret_key = os.environ.get('SECRET_KEY')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+from extensions import db, login_manager
 
 migrate = Migrate(app, db)  # Ajoutez cette ligne pour configurer Flask-Migrate
 
@@ -21,29 +24,18 @@ db.init_app(app)
 from models.team import Team, Player
 from models.match import Match
 from models.tournament import Tournament
+from models.user import User
 from sqlalchemy.orm import aliased 
 
 tournament = Tournament()
 
 # Configuration de Flask-Login
-login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Modèle utilisateur basique
-class User(UserMixin):
-    def __init__(self, id, username, password):
-        self.id = id
-        self.username = username
-        self.password = password
-
-# Dictionnaire pour stocker les utilisateurs (remplacez par une base de données en production)
-users = {}
-users[1] = User(id=1, username="admin", password="votre_mot_de_passe_securise")
-
 @login_manager.user_loader
 def load_user(user_id):
-    return users.get(int(user_id))
+    return User.query.get(int(user_id))
 
 @app.route('/', methods=['GET'])
 def index():
@@ -54,10 +46,13 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = next((u for u in users.values() if u.username == username and u.password == password), None)
-        if user:
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.check_password(password):
             login_user(user)
             return redirect(url_for('admin'))
+
         flash('Nom d\'utilisateur ou mot de passe incorrect.')
     return render_template('login.html')
 
@@ -178,13 +173,16 @@ def matches():
 
     # Récupérer les matchs non joués
     unplayed_matches = []
-    for match in tournament.get_unplayed_matches():
+    matches = tournament.get_unplayed_matches()
+
+    for index, match in enumerate(matches):
         team1 = Team.query.get(match.team1_id)
         team2 = Team.query.get(match.team2_id)
         unplayed_matches.append({
             'team1': team1.name,
             'team2': team2.name,
-            'match_id': match.id
+            'match_id': match.id,
+            'table_number': match.table_number
         })
 
     # Récupérer les matchs joués
@@ -197,7 +195,9 @@ def matches():
             'team2': team2.name,
             'score1': match.score1,
             'score2': match.score2,
+            'table_number': match.table_number,
             'date': match.date
+
         })
 
     return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches, is_admin=current_user.is_authenticated)
@@ -216,28 +216,86 @@ def admin():
             tournament.reset_tournament()
             flash("Le tournoi a été réinitialisé.", 'success')
             return redirect(url_for('admin'))
+
         elif 'start_tournament' in request.form:
             if len(tournament.get_teams()) % 2 != 0:
                 flash("Le nombre d'équipes doit être pair pour commencer le tournoi.", 'error')
                 return redirect(url_for('admin'))
 
-            # Vérifiez si c'est le premier tour
             if not Match.query.first():
-                # Premier tour : matchs aléatoires
                 if not tournament.generate_first_round_matches():
                     flash("Impossible de générer les matchs pour le premier tour.", 'error')
                     return redirect(url_for('admin'))
                 flash("Les matchs du premier tour ont été générés aléatoirement avec succès.", 'success')
             else:
-                # Tours suivants : matchs selon le classement
                 if not tournament.generate_matches():
                     flash("Impossible de générer les matchs pour les tours suivants.", 'error')
                     return redirect(url_for('admin'))
                 flash("Les matchs ont été générés selon le classement avec succès.", 'success')
             return redirect(url_for('matches'))
 
+        elif 'add_team' in request.form:
+            team_name = request.form.get('team_name')
+
+            if not team_name:
+                flash("Nom de l'equipe est obligatoires.", 'error')
+                return redirect(url_for('admin'))
+
+            if tournament.add_team(team_name):
+                flash(f"L'équipe {team_name} a été ajoutée avec succès.", 'success')
+            else:
+                flash("Impossible d'ajouter l'équipe. Le tournoi a peut-être déjà commencé ou l'équipe existe déjà.", 'error')
+            return redirect(url_for('admin'))
+        
+        elif 'remove_team' in request.form:
+            team_name = request.form.get('remove_team')
+
+            if not team_name:
+                flash("Noms de l'équipe non spécifié.", 'error')
+                return redirect(url_for('admin'))
+
+            if tournament.remove_team(team_name):
+                flash(f"L'équipe a été supprimée avec succès.", 'success')
+            else:
+                flash("Impossible de supprimer l'équipe. Le tournoi a peut-être déjà commencé ou l'équipe n'existe pas.", 'error')
+            return redirect(url_for('admin'))
+
     teams = tournament.get_teams()
-    return render_template('admin.html', teams=teams)
+    list_non_closed_matches = Match.query.filter(
+        and_(
+            Match.is_closed == False,
+            Match.date.isnot(None)
+        )
+    ).all()
+    matches_not_closed = []
+    for match in list_non_closed_matches:
+        matches_not_closed.append({
+            'team1': Team.query.get(match.team1_id).name,
+            'team2': Team.query.get(match.team2_id).name,
+            'match_id': match.id
+        })
+    return render_template('admin.html', teams=teams, matches_not_closed = matches_not_closed)
+
+# app.py
+@app.route('/update_match_result/<int:match_id>', methods=['POST'])
+@login_required
+def update_match_result(match_id):
+    tournament = Tournament.query.first()
+    if not tournament:
+        flash("Aucun tournoi trouvé.", 'error')
+        return redirect(url_for('matches'))
+
+    team1_score = int(request.form.get('team1_score'))
+    team2_score = int(request.form.get('team2_score'))
+
+    if tournament.update_match_result(match_id, team1_score, team2_score):
+        flash("Le résultat du match a été mis à jour avec succès.", 'success')
+    else:
+        flash("Impossible de mettre à jour le résultat du match.", 'error')
+
+    return redirect(url_for('matches'))
+
+
 
 
 

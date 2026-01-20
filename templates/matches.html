@@ -7,6 +7,7 @@
     {% endif %}
     <div class="row">
         <div class="col-md-6">
+            {% if is_admin %}
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Générer le prochain tour</h5>
@@ -27,7 +28,7 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        {% if is_admin %}
+                        
                         <div class="mb-3">
                             <label for="score1" class="form-label">Score Équipe 1</label>
                             <input type="number" class="form-control" id="score1" name="score1" required>
@@ -37,10 +38,10 @@
                             <input type="number" class="form-control" id="score2" name="score2" required>
                         </div>
                         <button type="submit" name="record_match" class="btn btn-primary">Enregistrer le score</button>
-                        {% endif %}
                     </form>
                 </div>
             </div>
+            {% endif %}
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Matchs non joués</h5>
@@ -49,6 +50,7 @@
                             <tr>
                                 <th>Équipe 1</th>
                                 <th>Équipe 2</th>
+                                <th>Table</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -56,6 +58,7 @@
                                 <tr>
                                     <td>{{ match.team1 }}</td>
                                     <td>{{ match.team2 }}</td>
+                                    <td>{{ match.table_number }}</td>
                                 </tr>
                             {% else %}
                                 <tr>
@@ -79,6 +82,7 @@
                                 <th>Équipe 1</th>
                                 <th>Équipe 2</th>
                                 <th>Score</th>
+                                <th>Table</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
@@ -88,6 +92,7 @@
                                     <td>{{ match.team1 }}</td>
                                     <td>{{ match.team2 }}</td>
                                     <td>{{ match.score1 }} - {{ match.score2 }}</td>
+                                    <td>{{ match.table_number }}</td>
                                     <td>{{ match.date }}</td>
                                 </tr>
                             {% else %}

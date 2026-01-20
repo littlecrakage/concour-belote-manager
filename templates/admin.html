@@ -58,7 +58,7 @@
                     </form>
                 </div>
             </div>
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Équipes Existantes</h5>
                     <p>Nombre d'équipes : {{ teams|length }}</p>
@@ -86,6 +86,31 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+                <!-- Section pour les matchs en cours -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Modifier un résultat</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="match" class="form-label">Choisir un match non clos</label>
+                            <select class="form-select" id="match_id" name="match" required>
+                                {% for match in matches_not_closed %}
+                                    <option value="{{ match.team1 }} vs {{ match.team2 }}">{{ match.team1 }} vs {{ match.team2 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="score1" class="form-label">Score Équipe 1</label>
+                            <input type="number" class="form-control" id="score1" name="score1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="score2" class="form-label">Score Équipe 2</label>
+                            <input type="number" class="form-control" id="score2" name="score2" required>
+                        </div>
+                        <button type="submit" name="record_match" class="btn btn-danger">Modifiez le score</button>
+                    </form>
                 </div>
             </div>
         </div>

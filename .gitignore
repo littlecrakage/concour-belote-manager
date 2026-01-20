@@ -24,3 +24,6 @@ config_db.py
 # Cache de l'IDE (par exemple PyCharm)
 .idea/
 .vscode/
+
+# Secret
+.env
