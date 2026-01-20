@@ -11,9 +11,6 @@ __pycache__/
 # Base de données locale
 tournament.db
 
-# Fichiers de migration temporaires
-migrations/*.pyc
-
 # Fichiers de configuration locale
 config.py
 config_db.py
