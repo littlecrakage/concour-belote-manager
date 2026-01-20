@@ -27,6 +27,7 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        {% if is_admin %}
                         <div class="mb-3">
                             <label for="score1" class="form-label">Score Équipe 1</label>
                             <input type="number" class="form-control" id="score1" name="score1" required>
@@ -36,6 +37,7 @@
                             <input type="number" class="form-control" id="score2" name="score2" required>
                         </div>
                         <button type="submit" name="record_match" class="btn btn-primary">Enregistrer le score</button>
+                        {% endif %}
                     </form>
                 </div>
             </div>
