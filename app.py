@@ -1,4 +1,5 @@
 # app.py
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from config import db
 from flask_migrate import Migrate
@@ -6,9 +7,9 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 
 import secrets
-app.secret_key = "12343454565656565"
+app.secret_key = os.environ.get('SECRET_KEY')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tournament.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 migrate = Migrate(app, db)  # Ajoutez cette ligne pour configurer Flask-Migrate
