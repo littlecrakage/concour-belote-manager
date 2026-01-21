@@ -11,7 +11,15 @@ app = Flask(__name__)
 
 app.secret_key = os.environ.get('SECRET_KEY')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1)
+db_url = os.environ.get("DATABASE_URL")
+
+if db_url:
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        db_url
+        .replace("postgres://", "postgresql+psycopg://", 1)
+        .replace("postgresql://", "postgresql+psycopg://", 1)
+    )
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 from extensions import db, login_manager
