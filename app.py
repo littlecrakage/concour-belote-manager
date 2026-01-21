@@ -109,7 +109,7 @@ def team_detail(team_id):
                 'date': match.date
             })
 
-    return render_template('team_detail.html', team=team, matches=team_matches)
+    return render_template('team_detail.html', team=team, matches=team_matches, is_admin=current_user.is_authenticated)
 
 
 @app.route('/matches', methods=['GET', 'POST'])

@@ -28,7 +28,9 @@
                                 {{ player.name }}
                                 <form method="POST" class="m-0">
                                     <input type="hidden" name="player_name" value="{{ player.name }}">
+                                    {% if is_admin %}
                                     <button type="submit" name="remove_player" class="btn btn-sm btn-danger">Retirer</button>
+                                    {% endif %}
                                 </form>
                             </li>
                         {% else %}
