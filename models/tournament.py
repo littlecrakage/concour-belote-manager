@@ -47,9 +47,8 @@ class Tournament():
 
     def get_ranking(self):
         return Team.query.order_by(
-            Team.points.desc(),
-            (Team.points_for - Team.points_against).desc(),
             Team.points_for.desc(),
+            (Team.points_for - Team.points_against).desc(),
             Team.points_against.asc()
         ).all()
 
@@ -73,7 +72,6 @@ class Tournament():
     def reset_tournament(self):
         teams = Team.query.all()
         for team in teams:
-            team.points = 0
             team.matches_played = 0
             team.points_for = 0
             team.points_against = 0
@@ -136,34 +134,6 @@ class Tournament():
         db.session.commit()
         return True
     
-    def update_match_result(self, match_id, team1_score, team2_score):
-        match = Match.query.get(match_id)
-        if not match or match.tournament_id != self.id:
-            return False  # Match non trouvé ou ne fait pas partie de ce tournoi
-
-        if match.is_closed:
-            return False  # Match déjà terminé ou fermé
-
-        match.team1_score = team1_score
-        match.team2_score = team2_score
-        match.is_completed = True
-
-        # Mettre à jour les points des équipes
-        team1 = Team.query.get(match.team1_id)
-        team2 = Team.query.get(match.team2_id)
-
-        if team1_score > team2_score:
-            team1.points += 2
-            team2.points += 1
-        elif team2_score > team1_score:
-            team2.points += 2
-            team1.points += 1
-        else:
-            team1.points += 1
-            team2.points += 1
-
-        db.session.commit()
-        return True
 
 
 

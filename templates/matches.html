@@ -22,27 +22,33 @@
                     <form method="POST">
                         <div class="mb-3">
                             <label for="match" class="form-label">Choisir un match non joué</label>
-                            <select class="form-select" id="match" name="match" required>
+                            <select class="form-select" id="match" name="match_id" required>
                                 {% for match in unplayed_matches %}
-                                    <option value="{{ match.team1 }} vs {{ match.team2 }}">{{ match.team1 }} vs {{ match.team2 }}</option>
+                                    <option value="{{ match.match_id }}" data-team1="{{ match.team1 }}" data-team2="{{ match.team2 }}">
+                                        {{ match.team1 }} vs {{ match.team2 }} (Table {{ match.table_number }})
+                                    </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="score1" class="form-label">Score Équipe 1</label>
-                            <input type="number" class="form-control" id="score1" name="score1" required>
+
+                        <!-- Champ pour le score de l'équipe 1 -->
+                        <div class="mb-3" id="team1_score_group">
+                            <label for="score1" class="form-label" id="team1_score_label">Score </label>
+                            <input type="number" class="form-control" id="score1" name="score1" min="0" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="score2" class="form-label">Score Équipe 2</label>
-                            <input type="number" class="form-control" id="score2" name="score2" required>
+
+                        <!-- Champ pour le score de l'équipe 2 -->
+                        <div class="mb-3" id="team2_score_group">
+                            <label for="score2" class="form-label" id="team2_score_label">Score </label>
+                            <input type="number" class="form-control" id="score2" name="score2" min="0" required>
                         </div>
+
                         <button type="submit" name="record_match" class="btn btn-primary">Enregistrer le score</button>
                     </form>
                 </div>
             </div>
             {% endif %}
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h5>Matchs en cours - Tour {{ current_round }}</h5>
                     <table class="table">
@@ -106,4 +112,33 @@
             </div>
         </div>
     </div>
+    <!-- Script JavaScript pour mettre à jour les labels en fonction du match sélectionné -->
+<!-- Script JavaScript pour mettre à jour les labels en fonction du match sélectionné -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const matchSelect = document.getElementById('match');
+        const team1ScoreLabel = document.getElementById('team1_score_label');
+        const team2ScoreLabel = document.getElementById('team2_score_label');
+
+        // Sélectionner le premier match par défaut
+        if (matchSelect.options.length > 0) {
+            const firstOption = matchSelect.options[0];
+            const team1 = firstOption.getAttribute('data-team1');
+            const team2 = firstOption.getAttribute('data-team2');
+
+            team1ScoreLabel.textContent = `Score ${team1}`;
+            team2ScoreLabel.textContent = `Score ${team2}`;
+        }
+
+        // Mettre à jour les labels lors du changement de sélection
+        matchSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const team1 = selectedOption.getAttribute('data-team1');
+            const team2 = selectedOption.getAttribute('data-team2');
+
+            team1ScoreLabel.textContent = `Score ${team1}`;
+            team2ScoreLabel.textContent = `Score ${team2}`;
+        });
+    });
+</script>
 {% endblock %}

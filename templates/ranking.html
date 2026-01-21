@@ -9,7 +9,7 @@
                     <tr>
                         <th>Position</th>
                         <th>Équipe</th>
-                        <th>Points</th>
+                        <th>Points Pour</th>
                         <th>Différence</th>
                         <th>Points contre</th>
                         <th>Matchs Joués</th>
@@ -21,7 +21,7 @@
                         <tr>
                             <td>{{ loop.index }}</td>
                             <td><a href="{{ url_for('team_detail', team_name=team.name) }}">{{ team.name }}</a></td>
-                            <td>{{ team.points }}</td>
+                            <td>{{ team.points_for }}</td>
                             <td>{{ team.points_for - team.points_against }}</td>
                             <td>{{ team.points_against }}</td>
                             <td>{{ team.matches_played }}</td>

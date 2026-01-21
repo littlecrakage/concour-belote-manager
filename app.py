@@ -120,16 +120,9 @@ def matches():
             return redirect(url_for('login'))
         
         if 'record_match' in request.form:
-            match_text = request.form.get('match')
-            if match_text:
-                team1_name, team2_name = match_text.split(" vs ")
-                Team1 = aliased(Team, name='team1')
-                Team2 = aliased(Team, name='team2')
-                match = db.session.query(Match).join(Team1, Match.team1_id == Team1.id).join(Team2, Match.team2_id == Team2.id).filter(
-                    Team1.name == team1_name,
-                    Team2.name == team2_name,
-                    Match.score1.is_(None)
-                ).first()
+            match_id = request.form.get('match_id')
+            if match_id:
+                match = db.session.query(Match).get(match_id)
                 score1 = int(request.form.get('score1'))
                 score2 = int(request.form.get('score2'))
                 if match:
@@ -286,24 +279,19 @@ def admin():
         })
     return render_template('admin.html', teams=teams, matches_not_closed = matches_not_closed)
 
-# app.py
 @app.route('/update_match_result/<int:match_id>', methods=['POST'])
 @login_required
 def update_match_result(match_id):
-    tournament = Tournament.query.first()
-    if not tournament:
-        flash("Aucun tournoi trouvé.", 'error')
-        return redirect(url_for('matches'))
+    if request.method == 'POST':
+        match = Match.query.get(match_id)
+        score1 = int(request.form.get('score1'))
+        score2 = int(request.form.get('score2'))
+        if not match:
+            flash("Match non trouvé.", 'error')
+            return redirect(url_for('matches'))
+        match.update_score(score1, score2)
 
-    team1_score = int(request.form.get('team1_score'))
-    team2_score = int(request.form.get('team2_score'))
-
-    if tournament.update_match_result(match_id, team1_score, team2_score):
-        flash("Le résultat du match a été mis à jour avec succès.", 'success')
-    else:
-        flash("Impossible de mettre à jour le résultat du match.", 'error')
-
-    return redirect(url_for('matches'))
+    return redirect(url_for('matches'))  # Remplacez par le nom de votre route
 
 
 

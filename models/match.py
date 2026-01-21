@@ -30,12 +30,21 @@ class Match(db.Model):
         team2.points_for += score2
         team2.points_against += score1
 
-        if score1 > score2:
-            team1.points += 2
-        elif score2 > score1:
-            team2.points += 2
-        else:
-            team1.points += 1
-            team2.points += 1
+        db.session.commit()
+    
+    def update_score(self, score1, score2):
+        old_score1 = self.score1 
+        old_score2 = self.score2 
+
+        team1 = Team.query.get(self.team1_id)
+        team2 = Team.query.get(self.team2_id)
+
+        team1.points_for +=  score1 - old_score1
+        team1.points_against += score2 - old_score2
+        team2.points_for += score2 - old_score2
+        team2.points_against += score1 - old_score1
+
+        self.score1 = score1
+        self.score2 = score2
 
         db.session.commit()
