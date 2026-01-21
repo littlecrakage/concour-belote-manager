@@ -43,13 +43,14 @@
             top: 56px;
             height: calc(100vh - 56px);
             width: 350px;
-            background-color: #f8f9fa;
-            border-left: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f7fb 100%);
+            border-left: none;
             padding: 0;
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 100;
-            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+            border-radius: 16px 0 0 0;
         }
         
         .info-panel.collapsed {
@@ -57,35 +58,45 @@
         }
         
         .info-panel-header {
-            background-color: #0d6efd;
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
             color: white;
-            padding: 1rem;
-            font-weight: bold;
+            padding: 1.5rem;
+            font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: none;
             gap: 1rem;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
         }
 
         .info-panel-header button {
             flex-shrink: 0;
+            opacity: 0.9;
+            transition: opacity 0.2s ease;
+        }
+
+        .info-panel-header button:hover {
+            opacity: 1;
         }
         
         .info-panel-body {
-            padding: 1.5rem;
+            padding: 2rem 1.75rem;
             font-size: 0.95rem;
-            line-height: 1.6;
+            line-height: 1.7;
+            color: #2c3e50;
         }
         
         .info-panel-body h5 {
-            font-weight: bold;
+            font-weight: 700;
             color: #0d6efd;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
             word-break: break-word;
+            font-size: 1.05rem;
+            letter-spacing: 0.3px;
         }
         
         .info-panel-body h5:first-child {
@@ -93,17 +104,31 @@
         }
         
         .info-panel-body ul {
-            margin: 0.5rem 0;
+            margin: 0.75rem 0;
             padding-left: 1.5rem;
+            list-style: none;
         }
         
         .info-panel-body li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.875rem;
             word-break: break-word;
+            padding-left: 0.5rem;
+            position: relative;
+        }
+
+        .info-panel-body li:before {
+            content: "→";
+            position: absolute;
+            left: -1.2rem;
+            color: #0d6efd;
+            font-weight: bold;
+            opacity: 0.7;
         }
 
         .info-panel-body p {
             word-break: break-word;
+            margin-bottom: 1rem;
+            color: #555;
         }
         
         .toggle-panel-btn {
@@ -114,20 +139,34 @@
             background-color: #0d6efd;
             color: white;
             border: none;
-            border-radius: 0;
+            border-radius: 12px;
             padding: 0.75rem;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 1rem;
             min-width: 44px;
             min-height: 44px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
+        }
+
+        .btn-icon {
+            display: block;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .btn-text {
+            display: none;
         }
         
         .toggle-panel-btn:hover {
             background-color: #0b5ed7;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
         }
 
         .toggle-panel-btn:active {
@@ -158,6 +197,7 @@
                 border-top: 1px solid #dee2e6;
                 border-bottom: none;
                 left: 0;
+                border-radius: 16px 16px 0 0;
             }
             
             .info-panel.collapsed {
@@ -170,8 +210,16 @@
                 bottom: 60px;
                 right: 0;
                 left: auto;
-                border-radius: 4px 4px 0 0;
+                border-radius: 12px;
                 z-index: 102;
+            }
+
+            .btn-text {
+                display: none !important;
+            }
+
+            .info-panel.collapsed ~ .toggle-panel-btn .btn-icon {
+                display: block !important;
             }
 
             .page-content {
@@ -349,7 +397,8 @@
     </div>
 
     <button class="toggle-panel-btn" id="togglePanelBtn" onclick="toggleInfoPanel()" title="Afficher/Masquer les informations">
-        ℹ️
+        <span class="btn-icon">ℹ️</span>
+        <span class="btn-text">INFO</span>
     </button>
 
     <script>
