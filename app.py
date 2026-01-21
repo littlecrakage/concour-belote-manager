@@ -1,5 +1,6 @@
 # app.py
 import os
+import json
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
@@ -9,6 +10,21 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
+
+# Load info panels configuration
+def load_info_panels():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'info_panels.json'), 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+info_panels = load_info_panels()
+
+# Make info_panels available to all templates
+@app.context_processor
+def inject_info_panels():
+    return dict(info_panels=info_panels)
 
 db_url = os.environ.get("DATABASE_URL")
 

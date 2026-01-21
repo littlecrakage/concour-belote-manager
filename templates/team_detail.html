@@ -71,21 +71,3 @@
     </div>
     <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">Retour à l'administration</a>
 {% endblock %}
-
-{% block info_panel %}
-    <h5>Détails de l'Équipe</h5>
-    <p>Consultez et gérez les informations de cette équipe.</p>
-    
-    <h5>Joueurs:</h5>
-    <ul>
-        <li>Une équipe nécessite 2 joueurs exactement</li>
-        <li>Vous pouvez ajouter ou retirer des joueurs ici</li>
-        <li>Les modifications sont sauvegardées automatiquement</li>
-    </ul>
-    
-    <h5>Historique:</h5>
-    <p>La section "Matchs Joués" affiche tous les matchs dans lesquels cette équipe a participé, avec les résultats et dates.</p>
-    
-    <h5>Performance:</h5>
-    <p>Suivez les performances de votre équipe au fil des matchs pour optimiser votre stratégie.</p>
-{% endblock %}
