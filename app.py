@@ -8,7 +8,6 @@ from sqlalchemy import and_
 load_dotenv()
 
 app = Flask(__name__)
-
 app.secret_key = os.environ.get('SECRET_KEY')
 
 db_url = os.environ.get("DATABASE_URL")
@@ -36,8 +35,6 @@ from models.user import User
 from sqlalchemy.orm import aliased 
 
 tournament = Tournament()
-
-current_round = 0
 
 # Configuration de Flask-Login
 login_manager.init_app(app)
@@ -112,7 +109,8 @@ def team_detail(team_name):
                 'date': match.date
             })
 
-    return render_template('team_detail.html', team=team, matches=team_matches, current_round=current_round)
+    return render_template('team_detail.html', team=team, matches=team_matches)
+
 
 @app.route('/matches', methods=['GET', 'POST'])
 def matches():
@@ -210,7 +208,7 @@ def matches():
 
         })
 
-    return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches, is_admin=current_user.is_authenticated)
+    return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches, is_admin=current_user.is_authenticated, current_round = tournament.get_current_round())
 
 @app.route('/ranking')
 def ranking():

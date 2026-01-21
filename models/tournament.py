@@ -1,3 +1,5 @@
+import json
+import os
 from sqlalchemy import or_
 from extensions import db
 from models.team import Team
@@ -7,6 +9,8 @@ from datetime import datetime
 import random
 
 class Tournament():
+
+    current_round = 0
 
     def add_team(self, name):
         if self.has_started():
@@ -35,6 +39,22 @@ class Tournament():
 
     def get_played_matches(self):
         return Match.query.filter(Match.score1.isnot(None)).all()
+    
+
+    def get_current_round(self):
+        if os.path.exists('current_round.json'):
+            with open('current_round.json', 'r') as f:
+                return json.load(f)['current_round']
+        return 0
+
+    def increment_current_round(self):
+        current_round = self.get_current_round() + 1
+        with open('current_round.json', 'w') as f:
+            json.dump({'current_round': current_round}, f)
+    
+    def reset_current_round(self):
+        with open('current_round.json', 'w') as f:
+            json.dump({'current_round': 0}, f)
 
 
     def get_ranking(self):
@@ -74,8 +94,7 @@ class Tournament():
         Match.query.delete()
 
         db.session.commit()
-        global current_round 
-        current_round = 0
+        self.reset_current_round()
         return True
 
     def has_unplayed_matches(self):
@@ -103,8 +122,7 @@ class Tournament():
                 db.session.add(match)
 
         db.session.commit()
-        global current_round 
-        current_round += 1
+        self.increment_current_round()
         return True
 
     def generate_first_round_matches(self):
@@ -130,8 +148,7 @@ class Tournament():
             db.session.add(match)
 
         db.session.commit()
-        global current_round 
-        current_round = 1
+        self.increment_current_round()
         return True
     
     def update_match_result(self, match_id, team1_score, team2_score):
@@ -162,6 +179,7 @@ class Tournament():
 
         db.session.commit()
         return True
+
 
 
 
