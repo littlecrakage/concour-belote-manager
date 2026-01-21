@@ -33,6 +33,7 @@
                                     {% endif %}
                                 </td>
                             {% endfor %}
+                            <td><a href="{{ url_for('team_detail', team_id=team_score.team_id) }}" class="btn btn-sm btn-info">Voir</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>

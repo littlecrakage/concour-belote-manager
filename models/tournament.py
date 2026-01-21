@@ -151,6 +151,7 @@ class Tournament():
         teams_scores = []
         for team in teams:
             team_data = {'team_name': team.name,
+                         'team_id': team.id,
                          'team_points_for': team.points_for,
                          'team_points_diff': team.points_for - team.points_against}
             for round_num in round_numbers:

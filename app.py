@@ -69,9 +69,9 @@ def logout():
     return redirect(url_for('ranking'))
 
 
-@app.route('/team/<team_name>', methods=['GET', 'POST'])
-def team_detail(team_name):
-    team = Team.query.filter_by(name=team_name).first()
+@app.route('/team/<int:team_id>', methods=['GET', 'POST'])
+def team_detail(team_id):
+    team = Team.query.get(team_id)
     if not team:
         return redirect(url_for('admin'))
 
@@ -85,7 +85,7 @@ def team_detail(team_name):
                     flash(f"Impossible d'ajouter le joueur {player_name} à l'équipe {team.name}.", 'error')
             else:
                 flash(f"L'équipe a déjà 2 joueurs.", 'error')
-            return redirect(url_for('team_detail', team_name=team_name))
+            return redirect(url_for('team_detail', team_id=team.id))
         elif 'remove_player' in request.form:
             player_name = request.form.get('player_name')
             if player_name:
@@ -93,7 +93,7 @@ def team_detail(team_name):
                     flash(f"Le joueur {player_name} a été retiré de l'équipe {team.name} avec succès.", 'success')
                 else:
                     flash(f"Impossible de retirer le joueur {player_name} de l'équipe {team.name}.", 'error')
-            return redirect(url_for('team_detail', team_name=team_name))
+            return redirect(url_for('team_detail', team_name=team.id))
 
     team_matches = []
     for match in Match.query.filter(Match.score1.isnot(None)).all():
