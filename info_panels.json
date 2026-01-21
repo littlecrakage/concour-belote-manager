@@ -6,20 +6,24 @@
       {
         "heading": "Fonctionnalités principales:",
         "list_items": [
-          "Administration: Créez et gérez les équipes, réinitialisez le tournoi",
-          "Matchs: Générez les tours de matchs et enregistrez les scores",
+          "Administration: Créez et gérez les équipes, démarez / réinitialisez le tournoi, et modifiez les résultats",
+          "Matchs: Générez les matchs a chaque tour et enregistrez les scores",
           "Classement: Consultez le classement des équipes en temps réel"
         ]
       },
       {
         "heading": "Comment démarrer?",
-        "content": "Commencez par l'administration pour ajouter vos équipes, puis générez le prochain tour pour lancer les matchs!"
+        "list_items": [
+            "Commencez dans l'onglet Admin.",
+            "Ajoutez vos équipes (vous pouvez lui donner un noms, mais aussi ajoutez des joueurs si besoin).", 
+            "Générez le premier tour avec le bouton 'Commencer le Tournoi'!"
+        ]
       }
     ]
   },
   "matches": {
     "title": "Gestion des Matchs",
-    "description": "Gérez tous les matchs de votre tournoi de Belote sur cette page.",
+    "description": "Quels sont les matches en cours et quels sont les résultats enregistrés?",
     "sections": [
       {
         "heading": "Pour les Administrateurs:",
@@ -37,7 +41,7 @@
       },
       {
         "heading": "Conseils:",
-        "content": "Assurez-vous que les scores sont correctement saisis. Les matchs peuvent être modifiés après enregistrement si nécessaire."
+        "content": "Assurez-vous que les scores sont correctement saisis. Les matchs peuvent être modifiés après enregistrement si nécessaire dans l'onglet Admin ⚠️ Uniquement pour le tour en cours ⚠️."
       }
     ]
   },
@@ -89,28 +93,6 @@
       }
     ]
   },
-  "teams": {
-    "title": "Gestion des Équipes",
-    "description": "Gérez toutes les équipes et leurs joueurs participants.",
-    "sections": [
-      {
-        "heading": "Ajouter une Équipe:",
-        "list_items": [
-          "Entrez le nom de l'équipe",
-          "Ajoutez les deux joueurs (nom complet recommandé)",
-          "Cliquez sur \"Ajouter\""
-        ]
-      },
-      {
-        "heading": "Modifier une Équipe:",
-        "content": "Cliquez sur le nom d'une équipe dans la liste pour accéder aux détails et modifier les joueurs."
-      },
-      {
-        "heading": "Règles:",
-        "content": "Chaque équipe doit avoir exactement 2 joueurs pour participer au tournoi."
-      }
-    ]
-  },
   "team_detail": {
     "title": "Détails de l'Équipe",
     "description": "Consultez et gérez les informations de cette équipe.",
@@ -118,7 +100,7 @@
       {
         "heading": "Joueurs:",
         "list_items": [
-          "Une équipe nécessite 2 joueurs exactement",
+          "Une équipe peut contenir 2 joueurs, si vous lui donnez un noms specifique.",
           "Vous pouvez ajouter ou retirer des joueurs ici",
           "Les modifications sont sauvegardées automatiquement"
         ]
