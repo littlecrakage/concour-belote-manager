@@ -1,0 +1,132 @@
+{
+  "index": {
+    "title": "Accueil",
+    "description": "Bienvenue sur le gestionnaire de tournoi de Belote! Cet outil vous permet de gérer facilement votre tournoi.",
+    "sections": [
+      {
+        "heading": "Fonctionnalités principales:",
+        "list_items": [
+          "Administration: Créez et gérez les équipes, démarez / réinitialisez le tournoi, et modifiez les résultats",
+          "Matchs: Générez les matchs a chaque tour et enregistrez les scores",
+          "Classement: Consultez le classement des équipes en temps réel"
+        ]
+      },
+      {
+        "heading": "Comment démarrer?",
+        "list_items": [
+            "Commencez dans l'onglet Admin.",
+            "Ajoutez vos équipes (vous pouvez lui donner un noms, mais aussi ajoutez des joueurs si besoin).", 
+            "Générez le premier tour avec le bouton 'Commencer le Tournoi'!"
+        ]
+      }
+    ]
+  },
+  "matches": {
+    "title": "Gestion des Matchs",
+    "description": "Quels sont les matches en cours et quels sont les résultats enregistrés?",
+    "sections": [
+      {
+        "heading": "Pour les Administrateurs:",
+        "list_items": [
+          "Générer le prochain tour: Créez automatiquement les matchs de la prochaine manche",
+          "Enregistrer un résultat: Entrez les scores des matchs joués"
+        ]
+      },
+      {
+        "heading": "Sections:",
+        "list_items": [
+          "Matchs en cours: Liste des matchs qui doivent encore être joués",
+          "Matchs joués: Historique complet des scores enregistrés"
+        ]
+      },
+      {
+        "heading": "Conseils:",
+        "content": "Assurez-vous que les scores sont correctement saisis. Les matchs peuvent être modifiés après enregistrement si nécessaire dans l'onglet Admin ⚠️ Uniquement pour le tour en cours ⚠️."
+      }
+    ]
+  },
+  "admin": {
+    "title": "Administration du Tournoi",
+    "description": "Gérez les équipes et contrôlez l'ensemble de votre tournoi de Belote.",
+    "sections": [
+      {
+        "heading": "Équipes:",
+        "list_items": [
+          "Ajouter une équipe: Enregistrez une nouvelle équipe participante",
+          "Voir les détails: Cliquez sur \"Voir\" pour gérer les joueurs d'une équipe",
+          "Retirer une équipe: Supprimez une équipe avant le début du tournoi"
+        ]
+      },
+      {
+        "heading": "Gestion du Tournoi:",
+        "list_items": [
+          "Commencer: Lance le tournoi avec les équipes enregistrées",
+          "Réinitialiser: Efface tous les matchs et scores (garde les équipes)",
+          "Modifier un résultat: Changez les scores des matchs déjà enregistrés"
+        ]
+      },
+      {
+        "heading": "⚠️ Important:",
+        "content": "Assurez-vous d'avoir ajouté toutes les équipes avant de commencer le tournoi!"
+      }
+    ]
+  },
+  "ranking": {
+    "title": "Classement du Tournoi",
+    "description": "Consultez le classement en direct de votre tournoi de Belote.",
+    "sections": [
+      {
+        "heading": "Comment lire le tableau:",
+        "list_items": [
+          "Total de points: Points marqués au cours du tournoi",
+          "Différence de Points: Écart entre les points pour et contre",
+          "Tours: Résultats détaillés par manche"
+        ]
+      },
+      {
+        "heading": "Interprétation:",
+        "content": "Les équipes sont classées par points marqués et différence de points. Plus d'informations disponibles en cliquant sur \"Voir\" pour chaque équipe."
+      },
+      {
+        "heading": "Mise à jour:",
+        "content": "Le classement est mis à jour automatiquement après chaque score enregistré."
+      }
+    ]
+  },
+  "team_detail": {
+    "title": "Détails de l'Équipe",
+    "description": "Consultez et gérez les informations de cette équipe.",
+    "sections": [
+      {
+        "heading": "Joueurs:",
+        "list_items": [
+          "Une équipe peut contenir 2 joueurs, si vous lui donnez un noms specifique.",
+          "Vous pouvez ajouter ou retirer des joueurs ici",
+          "Les modifications sont sauvegardées automatiquement"
+        ]
+      },
+      {
+        "heading": "Historique:",
+        "content": "La section \"Matchs Joués\" affiche tous les matchs dans lesquels cette équipe a participé, avec les résultats et dates."
+      },
+      {
+        "heading": "Performance:",
+        "content": "Suivez les performances de votre équipe au fil des matchs pour optimiser votre stratégie."
+      }
+    ]
+  },
+  "login": {
+    "title": "Connexion Requise",
+    "description": "Vous devez vous connecter pour accéder au gestionnaire de tournoi.",
+    "sections": [
+      {
+        "heading": "Identifiants:",
+        "content": "Utilisez vos identifiants administrateur pour vous connecter. Si vous n'avez pas encore de compte, veuillez contacter l'administrateur."
+      },
+      {
+        "heading": "Sécurité:",
+        "content": "Votre mot de passe est sécurisé et ne sera jamais partagé. Ne partagez vos identifiants avec personne."
+      }
+    ]
+  }
+}
