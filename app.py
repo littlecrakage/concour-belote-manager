@@ -37,6 +37,8 @@ from sqlalchemy.orm import aliased
 
 tournament = Tournament()
 
+current_round = 0
+
 # Configuration de Flask-Login
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -110,7 +112,7 @@ def team_detail(team_name):
                 'date': match.date
             })
 
-    return render_template('team_detail.html', team=team, matches=team_matches)
+    return render_template('team_detail.html', team=team, matches=team_matches, current_round=current_round)
 
 @app.route('/matches', methods=['GET', 'POST'])
 def matches():

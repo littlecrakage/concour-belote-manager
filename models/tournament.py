@@ -74,6 +74,8 @@ class Tournament():
         Match.query.delete()
 
         db.session.commit()
+        global current_round 
+        current_round = 0
         return True
 
     def has_unplayed_matches(self):
@@ -101,6 +103,8 @@ class Tournament():
                 db.session.add(match)
 
         db.session.commit()
+        global current_round 
+        current_round += 1
         return True
 
     def generate_first_round_matches(self):
@@ -126,6 +130,8 @@ class Tournament():
             db.session.add(match)
 
         db.session.commit()
+        global current_round 
+        current_round = 1
         return True
     
     def update_match_result(self, match_id, team1_score, team2_score):
