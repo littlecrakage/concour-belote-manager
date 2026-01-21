@@ -17,7 +17,7 @@ class Match(db.Model):
     def record_score(self, score1, score2):
         self.score1 = score1
         self.score2 = score2
-        self.date = datetime.now().strftime("%d/%m/%Y %H:%M")
+        self.date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
         team1 = Team.query.get(self.team1_id)
         team2 = Team.query.get(self.team2_id)

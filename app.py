@@ -176,6 +176,7 @@ def matches():
                             'score2': match.score2,
                             'date': match.date
                         })
+                    
                     return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches, error=error)
                 return redirect(url_for('matches'))
 
@@ -207,8 +208,9 @@ def matches():
             'date': match.date
 
         })
-
-    return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches, is_admin=current_user.is_authenticated, current_round = tournament.get_current_round())
+    
+    played_matches_sorted = sorted(played_matches, key=lambda x: x['date'], reverse=True)
+    return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches_sorted, is_admin=current_user.is_authenticated, current_round = tournament.get_current_round())
 
 @app.route('/ranking')
 def ranking():
