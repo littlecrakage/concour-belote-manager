@@ -142,3 +142,23 @@
     });
 </script>
 {% endblock %}
+
+{% block info_panel %}
+    <h5>Gestion des Matchs</h5>
+    <p>Gérez tous les matchs de votre tournoi de Belote sur cette page.</p>
+    
+    <h5>Pour les Administrateurs:</h5>
+    <ul>
+        <li><strong>Générer le prochain tour:</strong> Créez automatiquement les matchs de la prochaine manche</li>
+        <li><strong>Enregistrer un résultat:</strong> Entrez les scores des matchs joués</li>
+    </ul>
+    
+    <h5>Sections:</h5>
+    <ul>
+        <li><strong>Matchs en cours:</strong> Liste des matchs qui doivent encore être joués</li>
+        <li><strong>Matchs joués:</strong> Historique complet des scores enregistrés</li>
+    </ul>
+    
+    <h5>Conseils:</h5>
+    <p>Assurez-vous que les scores sont correctement saisis. Les matchs peuvent être modifiés après enregistrement si nécessaire.</p>
+{% endblock %}
