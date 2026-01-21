@@ -42,12 +42,9 @@ A web application to organize and manage Belote card game tournaments. This tool
    SECRET_KEY=your_secret_key_here
    DATABASE_URL=postgresql://username:password@localhost/concour_belote
    FLASK_ENV=production
-   FLASK_DEBUG=False
+   FLASK_DEBUG=True
    ```
-   
-   **Note on FLASK_DEBUG**:
-   - Set `FLASK_DEBUG=True` during development for auto-reloading and detailed error messages
-   - Set `FLASK_DEBUG=False` in production for security and stability
+
 
 4. Initialize the database:
    ```bash
@@ -101,7 +98,6 @@ concour-belote-manager/
 ├── config.py             # Configuration settings
 ├── extensions.py         # Flask extensions initialization
 ├── init_db.py            # Database initialization script
-├── models.py             # Data models
 ├── requirements.txt      # Python dependencies
 ├── Procfile             # Heroku deployment configuration
 ├── migrations/          # Database migration files (Alembic)
@@ -136,10 +132,7 @@ This application is ready for deployment on Heroku or similar platforms using th
 
 - `SECRET_KEY`: Flask secret key for session management
 - `DATABASE_URL`: PostgreSQL connection string
-
-## License
-
-All rights reserved.
+- `FLASK_DEBUG`: True during development for auto-reloading and detailed error messages, skip or False in Prod
 
 ## Support
 
