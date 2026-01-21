@@ -205,10 +205,17 @@ def matches():
     played_matches_sorted = sorted(played_matches, key=lambda x: x['date'], reverse=True)
     return render_template('matches.html', unplayed_matches=unplayed_matches, played_matches=played_matches_sorted, is_admin=current_user.is_authenticated, current_round = tournament.get_current_round())
 
+
 @app.route('/ranking')
 def ranking():
-    sorted_teams = tournament.get_ranking()
-    return render_template('ranking.html', teams=sorted_teams)
+    # Récupérer le classement actuel
+    teams = Team.query.order_by(Team.points_for.desc(), Team.name).all()
+
+    # Récupérer les scores par tour
+    teams_scores, round_numbers = tournament.get_scores_by_round()
+    teams_scores.sort(key=lambda x: x['team_points_for'], reverse=True)
+
+    return render_template('ranking.html', teams=teams, teams_scores=teams_scores, round_numbers=round_numbers)
 
 
 @app.route('/admin', methods=['GET', 'POST'])
@@ -294,7 +301,9 @@ def update_match_result(match_id):
     return redirect(url_for('matches'))  # Remplacez par le nom de votre route
 
 
-
+@app.template_filter('get_item')
+def get_item(dictionary, key):
+    return dictionary.get(key, None)
 
 
 if __name__ == '__main__':

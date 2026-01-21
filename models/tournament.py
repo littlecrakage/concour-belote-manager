@@ -108,7 +108,7 @@ class Tournament():
         for i in range(0, len(teams), 2):
             table_number += 1
             if i + 1 < len(teams):
-                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number = table_number)
+                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number = table_number,round_number=self.get_current_round())
                 db.session.add(match)
 
         db.session.commit()
@@ -132,13 +132,46 @@ class Tournament():
             team1 = teams[i]
             team2 = teams[i + 1]
 
-            match = Match(team1_id=team1.id, team2_id=team2.id, table_number = table_number)
+            match = Match(team1_id=team1.id, team2_id=team2.id, table_number = table_number, round_number=self.get_current_round())
             
             db.session.add(match)
 
         db.session.commit()
         return True
-    
+
+    def get_scores_by_round(self):
+        # Récupérer tous les tours joués
+        rounds = db.session.query(Match.round_number).distinct().order_by(Match.round_number).all()
+        round_numbers = [round[0] for round in rounds if round[0] is not None]
+
+        # Récupérer toutes les équipes
+        teams = Team.query.order_by(Team.name).all()
+
+        # Préparer les données pour chaque équipe
+        teams_scores = []
+        for team in teams:
+            team_data = {'team_name': team.name,
+                         'team_points_for': team.points_for,
+                         'team_points_diff': team.points_for - team.points_against}
+            for round_num in round_numbers:
+                # Récupérer le score de l'équipe pour ce tour
+                match = db.session.query(Match).filter(
+                    ((Match.team1_id == team.id) | (Match.team2_id == team.id)) &
+                    (Match.round_number == round_num) 
+                ).first()
+
+                if match:
+                    if match.team1_id == team.id:
+                        team_data[f'round_{round_num}'] = match.score1
+                    else:
+                        team_data[f'round_{round_num}'] = match.score2
+                else:
+                    team_data[f'round_{round_num}'] = None
+
+            teams_scores.append(team_data)
+
+        return teams_scores, round_numbers
+
 
 
 

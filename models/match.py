@@ -10,6 +10,7 @@ class Match(db.Model):
     team2_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
     score1 = db.Column(db.Integer, nullable=True)
     score2 = db.Column(db.Integer, nullable=True)
+    round_number = db.Column(db.Integer, nullable=False)
     table_number = db.Column(db.Integer)
     is_closed = db.Column(db.Boolean, default=False)  # Nouveau champ pour marquer les matchs terminés
     date = db.Column(db.String(20), nullable=True)

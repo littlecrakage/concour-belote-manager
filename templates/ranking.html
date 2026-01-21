@@ -1,41 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="mb-4">Classement</h1>
-    <div class="card">
+    <h1>Classement</h1>
+
+    <div class="card mb-4">
         <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Position</th>
-                        <th>Équipe</th>
-                        <th>Points Pour</th>
-                        <th>Différence</th>
-                        <th>Points contre</th>
-                        <th>Matchs Joués</th>
-                        <th>Joueurs</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for team in teams %}
+            <h5 class="card-title">Scores par tour</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td>{{ loop.index }}</td>
-                            <td><a href="{{ url_for('team_detail', team_name=team.name) }}">{{ team.name }}</a></td>
-                            <td>{{ team.points_for }}</td>
-                            <td>{{ team.points_for - team.points_against }}</td>
-                            <td>{{ team.points_against }}</td>
-                            <td>{{ team.matches_played }}</td>
-                            <td>
-                                {% if team.players %}
-                                    {{ team.players|map(attribute='name')|join(', ') }}
-                                {% else %}
-                                    Aucun joueur
-                                {% endif %}
-                            </td>
+                            <th>Équipe</th>
+                            <th>Total de points</th>
+                            <th>Difference de Points</th>
+                            {% for round_num in round_numbers %}
+                                <th>Tour {{ round_num }}</th>
+                            {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for team_score in teams_scores %}
+                        <tr>
+                            <td>{{ team_score.team_name }}</td>
+                            <td>{{ team_score.team_points_for }}</td>
+                            <td>{{ team_score.team_points_diff }}</td>
+                            {% for round_num in round_numbers %}
+                                <td>
+                                    {% if team_score | get_item('round_' ~ round_num) is not none %}
+                                        {{ team_score | get_item('round_' ~ round_num) }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}
