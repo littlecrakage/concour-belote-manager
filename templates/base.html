@@ -6,24 +6,37 @@
     <title>Gestionnaire de Tournoi de Belote</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
         
-        .main-content {
+        .content-wrapper {
             display: flex;
             flex: 1;
+            gap: 0;
             overflow: hidden;
         }
         
-        .container-content {
+        .page-content {
             flex: 1;
             overflow-y: auto;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 100%;
             padding: 1rem;
         }
-        
+
+        /* Info Panel Styles */
         .info-panel {
             position: fixed;
             right: 0;
@@ -36,6 +49,7 @@
             overflow-y: auto;
             transition: transform 0.3s ease;
             z-index: 100;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
         }
         
         .info-panel.collapsed {
@@ -53,6 +67,11 @@
             position: sticky;
             top: 0;
             border-bottom: 1px solid #dee2e6;
+            gap: 1rem;
+        }
+
+        .info-panel-header button {
+            flex-shrink: 0;
         }
         
         .info-panel-body {
@@ -66,6 +85,7 @@
             color: #0d6efd;
             margin-top: 1.5rem;
             margin-bottom: 0.5rem;
+            word-break: break-word;
         }
         
         .info-panel-body h5:first-child {
@@ -79,6 +99,11 @@
         
         .info-panel-body li {
             margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+
+        .info-panel-body p {
+            word-break: break-word;
         }
         
         .toggle-panel-btn {
@@ -90,48 +115,168 @@
             color: white;
             border: none;
             border-radius: 0;
-            padding: 0.5rem 0.75rem;
+            padding: 0.75rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .toggle-panel-btn:hover {
             background-color: #0b5ed7;
         }
-        
-        .info-panel.collapsed + .toggle-panel-btn {
-            right: 0;
+
+        .toggle-panel-btn:active {
+            transform: scale(0.95);
         }
-        
-        .content-wrapper {
-            display: flex;
-            flex: 1;
-            gap: 0;
-        }
-        
-        .page-content {
-            flex: 1;
-            overflow-y: auto;
-        }
-        
+
+        /* Tablet and smaller laptops */
         @media (max-width: 1200px) {
             .info-panel {
                 width: 300px;
             }
+
+            .container {
+                padding: 0.75rem;
+            }
         }
-        
+
+        /* Tablets */
         @media (max-width: 768px) {
             .info-panel {
                 width: 100%;
-                top: 56px;
+                top: auto;
+                bottom: 0;
                 height: auto;
-                position: absolute;
+                max-height: 50vh;
+                position: fixed;
                 border-left: none;
                 border-top: 1px solid #dee2e6;
+                border-bottom: none;
+                left: 0;
             }
             
             .info-panel.collapsed {
-                transform: translateY(-200px);
+                transform: translateY(100%);
+                visibility: hidden;
+            }
+
+            .toggle-panel-btn {
+                top: auto;
+                bottom: 60px;
+                right: 0;
+                left: auto;
+                border-radius: 4px 4px 0 0;
+                z-index: 102;
+            }
+
+            .page-content {
+                padding-bottom: 70px;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Mobile phones */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-body {
+                padding: 0.75rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            table {
+                font-size: 0.75rem;
+            }
+
+            .table th, .table td {
+                padding: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .info-panel {
+                max-height: 45vh;
+            }
+
+            .info-panel-body {
+                padding: 1rem;
+            }
+
+            .info-panel-body h5 {
+                font-size: 0.95rem;
+                margin-top: 1rem;
+            }
+
+            .page-content {
+                padding-bottom: 50px;
+            }
+        }
+
+        /* Very small phones */
+        @media (max-width: 360px) {
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            .navbar-brand {
+                font-size: 0.9rem;
+            }
+
+            table {
+                font-size: 0.7rem;
+            }
+
+            .btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Landscape mode on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .info-panel {
+                max-height: 70vh;
+            }
+
+            h1 {
+                margin-bottom: 0.5rem;
             }
         }
     </style>
