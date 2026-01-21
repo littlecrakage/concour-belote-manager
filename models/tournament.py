@@ -53,18 +53,23 @@ class Tournament():
         ).all()
 
     def remove_team(self, team_name):
+        # Trouver l'équipe par son nom
         team = Team.query.filter_by(name=team_name).first()
         if not team:
-            return False
+            return False  # Équipe non trouvée
 
-        # Vérifiez si l'équipe a déjà joué des matchs
+        # Vérifier si l'équipe a déjà joué des matchs
         if Match.query.filter(
-            (Match.team1_id == team.id) | (Match.team2_id == team.id),
-            Match.score1.isnot(None)
+            ((Match.team1_id == team.id) | (Match.team2_id == team.id)) &
+            (Match.is_closed == True)
         ).first():
-            return False
+            return False  # L'équipe a déjà joué des matchs
 
-        # Supprimez l'équipe (les joueurs seront supprimés automatiquement grâce à la relation)
+        # Supprimer explicitement les joueurs de l'équipe
+        for player in team.players[:]:  # Utilisez une copie de la liste pour éviter les problèmes d'itération
+            db.session.delete(player)
+
+        # Supprimer l'équipe
         db.session.delete(team)
         db.session.commit()
         return True
