@@ -310,4 +310,5 @@ def update_match_result(match_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(debug=debug)
