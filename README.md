@@ -42,7 +42,12 @@ A web application to organize and manage Belote card game tournaments. This tool
    SECRET_KEY=your_secret_key_here
    DATABASE_URL=postgresql://username:password@localhost/concour_belote
    FLASK_ENV=production
+   FLASK_DEBUG=False
    ```
+   
+   **Note on FLASK_DEBUG**:
+   - Set `FLASK_DEBUG=True` during development for auto-reloading and detailed error messages
+   - Set `FLASK_DEBUG=False` in production for security and stability
 
 4. Initialize the database:
    ```bash
