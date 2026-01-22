@@ -20,8 +20,8 @@ class Match(db.Model):
         self.score2 = score2
         self.date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-        team1 = Team.query.get(self.team1_id)
-        team2 = Team.query.get(self.team2_id)
+        team1 = db.session.get(Team, self.team1_id)
+        team2 = db.session.get(Team, self.team2_id)
 
         team1.matches_played += 1
         team2.matches_played += 1
@@ -37,8 +37,8 @@ class Match(db.Model):
         old_score1 = self.score1 
         old_score2 = self.score2 
 
-        team1 = Team.query.get(self.team1_id)
-        team2 = Team.query.get(self.team2_id)
+        team1 = db.session.get(Team, self.team1_id)
+        team2 = db.session.get(Team, self.team2_id)
 
         team1.points_for +=  score1 - old_score1
         team1.points_against += score2 - old_score2

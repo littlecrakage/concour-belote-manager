@@ -1,12 +1,18 @@
 # app.py
 import os
 import json
+import logging
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from sqlalchemy import and_
 load_dotenv()
+
+# Enable SQL query logging (set to DEBUG level to see queries)
+# Uncomment the lines below to enable query logging for performance monitoring
+# logging.basicConfig()
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
@@ -58,7 +64,7 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 @app.route('/', methods=['GET'])
 def index():
@@ -87,7 +93,7 @@ def logout():
 
 @app.route('/team/<int:team_id>', methods=['GET', 'POST'])
 def team_detail(team_id):
-    team = Team.query.get(team_id)
+    team = db.session.get(Team, team_id)
     if not team:
         return redirect(url_for('admin'))
 
@@ -115,7 +121,7 @@ def team_detail(team_id):
     for match in Match.query.filter(Match.score1.isnot(None)).all():
         if match.team1_id == team.id or match.team2_id == team.id:
             opponent_id = match.team2_id if match.team1_id == team.id else match.team1_id
-            opponent = Team.query.get(opponent_id)
+            opponent = db.session.get(Team, opponent_id)
             score1 = match.score1 if match.team1_id == team.id else match.score2
             score2 = match.score2 if match.team1_id == team.id else match.score1
             team_matches.append({
@@ -138,7 +144,7 @@ def matches():
         if 'record_match' in request.form:
             match_id = request.form.get('match_id')
             if match_id:
-                match = db.session.query(Match).get(match_id)
+                match = db.session.get(Match, match_id)
                 score1 = int(request.form.get('score1'))
                 score2 = int(request.form.get('score2'))
                 if match:
@@ -149,8 +155,8 @@ def matches():
                 error = "Il reste des matchs non joués. Veuillez enregistrer tous les résultats avant de générer le prochain tour."
                 unplayed_matches = []
                 for match in tournament.get_unplayed_matches():
-                    team1 = Team.query.get(match.team1_id)
-                    team2 = Team.query.get(match.team2_id)
+                    team1 = db.session.get(Team, match.team1_id)
+                    team2 = db.session.get(Team, match.team2_id)
                     unplayed_matches.append({
                         'team1': team1.name,
                         'team2': team2.name,
@@ -159,8 +165,8 @@ def matches():
 
                 played_matches = []
                 for match in tournament.get_played_matches():
-                    team1 = Team.query.get(match.team1_id)
-                    team2 = Team.query.get(match.team2_id)
+                    team1 = db.session.get(Team, match.team1_id)
+                    team2 = db.session.get(Team, match.team2_id)
                     played_matches.append({
                         'team1': team1.name,
                         'team2': team2.name,
@@ -194,8 +200,8 @@ def matches():
     matches = tournament.get_unplayed_matches()
 
     for index, match in enumerate(matches):
-        team1 = Team.query.get(match.team1_id)
-        team2 = Team.query.get(match.team2_id)
+        team1 = db.session.get(Team, match.team1_id)
+        team2 = db.session.get(Team, match.team2_id)
         unplayed_matches.append({
             'team1': team1.name,
             'team2': team2.name,
@@ -206,8 +212,8 @@ def matches():
     # Récupérer les matchs joués
     played_matches = []
     for match in tournament.get_played_matches():
-        team1 = Team.query.get(match.team1_id)
-        team2 = Team.query.get(match.team2_id)
+        team1 = db.session.get(Team, match.team1_id)
+        team2 = db.session.get(Team, match.team2_id)
         played_matches.append({
             'team1': team1.name,
             'team2': team2.name,
