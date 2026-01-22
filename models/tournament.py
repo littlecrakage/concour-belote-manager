@@ -42,7 +42,8 @@ class Tournament():
     
 
     def get_current_round(self):
-        return db.session.query(func.min(Team.matches_played)).scalar() + 1
+        min_matches = db.session.query(func.min(Team.matches_played)).scalar()
+        return (min_matches if min_matches is not None else 0) + 1
 
 
     def get_ranking(self):
