@@ -27,3 +27,4 @@ config_db.py
 
 # Secret
 .env
+create_user.py
