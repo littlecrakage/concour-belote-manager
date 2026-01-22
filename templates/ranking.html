@@ -12,7 +12,7 @@
                         <tr>
                             <th>Équipe</th>
                             <th>Total de points</th>
-                            <th>Difference de Points</th>
+                            <!-- <th>Difference de Points</th> -->
                             {% for round_num in round_numbers %}
                                 <th>Tour {{ round_num }}</th>
                             {% endfor %}
@@ -23,7 +23,6 @@
                         <tr>
                             <td>{{ team_score.team_name }}</td>
                             <td>{{ team_score.team_points_for }}</td>
-                            <td>{{ team_score.team_points_diff }}</td>
                             {% for round_num in round_numbers %}
                                 <td>
                                     {% if team_score | get_item('round_' ~ round_num) is not none %}
