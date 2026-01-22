@@ -147,6 +147,15 @@ class Tournament():
 
         # Récupérer toutes les équipes
         teams = Team.query.order_by(Team.name).all()
+        
+        # Batch-fetch all matches at once instead of querying per-team-per-round
+        all_matches = Match.query.all()
+        
+        # Build a lookup dict: (team_id, round_number) -> match
+        match_map = {}
+        for match in all_matches:
+            match_map[(match.team1_id, match.round_number)] = match
+            match_map[(match.team2_id, match.round_number)] = match
 
         # Préparer les données pour chaque équipe
         teams_scores = []
@@ -154,13 +163,9 @@ class Tournament():
             team_data = {'team_name': team.name,
                          'team_id': team.id,
                         'team_points_for': team.points_for}
-                        # 'team_points_diff': team.points_for - team.points_against
             for round_num in round_numbers:
-                # Récupérer le score de l'équipe pour ce tour
-                match = db.session.query(Match).filter(
-                    ((Match.team1_id == team.id) | (Match.team2_id == team.id)) &
-                    (Match.round_number == round_num) 
-                ).first()
+                # Lookup from map instead of querying
+                match = match_map.get((team.id, round_num))
 
                 if match:
                     if match.team1_id == team.id:

@@ -14,6 +14,10 @@ class Match(db.Model):
     table_number = db.Column(db.Integer)
     is_closed = db.Column(db.Boolean, default=False)  # Nouveau champ pour marquer les matchs terminés
     date = db.Column(db.String(20), nullable=True)
+    
+    # Relationships for eager loading
+    team1 = db.relationship('Team', foreign_keys=[team1_id], lazy='joined')
+    team2 = db.relationship('Team', foreign_keys=[team2_id], lazy='joined')
 
     def record_score(self, score1, score2):
         self.score1 = score1
