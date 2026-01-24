@@ -1,18 +1,12 @@
 # app.py
 import os
 import json
-import logging
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from sqlalchemy import and_
 load_dotenv()
-
-# Enable SQL query logging (set to DEBUG level to see queries)
-# Uncomment the lines below to enable query logging for performance monitoring
-# logging.basicConfig()
-# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
@@ -31,6 +25,12 @@ info_panels = load_info_panels()
 @app.context_processor
 def inject_info_panels():
     return dict(info_panels=info_panels)
+
+@app.context_processor
+def inject_tournament():
+    """Make tournament available to all templates"""
+    global tournament
+    return dict(tournament=tournament if tournament else None)
 
 db_url = os.environ.get("DATABASE_URL")
 
@@ -56,7 +56,24 @@ from models.tournament import Tournament
 from models.user import User
 from sqlalchemy.orm import aliased 
 
-tournament = Tournament()
+def get_tournament():
+    """Get or create the main tournament"""
+    tournament = Tournament.query.first()
+    if not tournament:
+        tournament = Tournament(ranking_system='points_sum', prevent_duplicate_matches=False)
+        db.session.add(tournament)
+        db.session.commit()
+    return tournament
+
+# Initialize tournament after app context
+tournament = None
+
+@app.before_request
+def before_request():
+    """Initialize tournament before each request"""
+    global tournament
+    # Always refresh tournament from database to get latest changes
+    tournament = get_tournament()
 
 # Configuration de Flask-Login
 login_manager.init_app(app)
@@ -64,7 +81,7 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    return User.query.get(int(user_id))
 
 @app.route('/', methods=['GET'])
 def index():
@@ -93,7 +110,7 @@ def logout():
 
 @app.route('/team/<int:team_id>', methods=['GET', 'POST'])
 def team_detail(team_id):
-    team = db.session.get(Team, team_id)
+    team = Team.query.get(team_id)
     if not team:
         return redirect(url_for('admin'))
 
@@ -120,8 +137,7 @@ def team_detail(team_id):
     team_matches = []
     for match in Match.query.filter(Match.score1.isnot(None)).all():
         if match.team1_id == team.id or match.team2_id == team.id:
-            opponent_id = match.team2_id if match.team1_id == team.id else match.team1_id
-            opponent = db.session.get(Team, opponent_id)
+            opponent = match.team2 if match.team1_id == team.id else match.team1
             score1 = match.score1 if match.team1_id == team.id else match.score2
             score2 = match.score2 if match.team1_id == team.id else match.score1
             team_matches.append({
@@ -144,7 +160,7 @@ def matches():
         if 'record_match' in request.form:
             match_id = request.form.get('match_id')
             if match_id:
-                match = db.session.get(Match, match_id)
+                match = db.session.query(Match).get(match_id)
                 score1 = int(request.form.get('score1'))
                 score2 = int(request.form.get('score2'))
                 if match:
@@ -155,21 +171,17 @@ def matches():
                 error = "Il reste des matchs non joués. Veuillez enregistrer tous les résultats avant de générer le prochain tour."
                 unplayed_matches = []
                 for match in tournament.get_unplayed_matches():
-                    team1 = db.session.get(Team, match.team1_id)
-                    team2 = db.session.get(Team, match.team2_id)
                     unplayed_matches.append({
-                        'team1': team1.name,
-                        'team2': team2.name,
+                        'team1': match.team1.name,
+                        'team2': match.team2.name,
                         'match_id': match.id
                     })
 
                 played_matches = []
                 for match in tournament.get_played_matches():
-                    team1 = db.session.get(Team, match.team1_id)
-                    team2 = db.session.get(Team, match.team2_id)
                     played_matches.append({
-                        'team1': team1.name,
-                        'team2': team2.name,
+                        'team1': match.team1.name,
+                        'team2': match.team2.name,
                         'score1': match.score1,
                         'score2': match.score2,
                         'date': match.date
@@ -182,11 +194,9 @@ def matches():
                     unplayed_matches = []
                     played_matches = []
                     for match in tournament.get_played_matches():
-                        team1 = Team.query.get(match.team1_id)
-                        team2 = Team.query.get(match.team2_id)
                         played_matches.append({
-                            'team1': team1.name,
-                            'team2': team2.name,
+                            'team1': match.team1.name,
+                            'team2': match.team2.name,
                             'score1': match.score1,
                             'score2': match.score2,
                             'date': match.date
@@ -200,11 +210,9 @@ def matches():
     matches = tournament.get_unplayed_matches()
 
     for index, match in enumerate(matches):
-        team1 = db.session.get(Team, match.team1_id)
-        team2 = db.session.get(Team, match.team2_id)
         unplayed_matches.append({
-            'team1': team1.name,
-            'team2': team2.name,
+            'team1': match.team1.name,
+            'team2': match.team2.name,
             'match_id': match.id,
             'table_number': match.table_number
         })
@@ -212,11 +220,9 @@ def matches():
     # Récupérer les matchs joués
     played_matches = []
     for match in tournament.get_played_matches():
-        team1 = db.session.get(Team, match.team1_id)
-        team2 = db.session.get(Team, match.team2_id)
         played_matches.append({
-            'team1': team1.name,
-            'team2': team2.name,
+            'team1': match.team1.name,
+            'team2': match.team2.name,
             'score1': match.score1,
             'score2': match.score2,
             'table_number': match.table_number,
@@ -230,19 +236,22 @@ def matches():
 
 @app.route('/ranking')
 def ranking():
+    global tournament
+    
     # Récupérer le classement actuel
-    teams = Team.query.order_by(Team.points_for.desc(), Team.name).all()
+    teams = tournament.get_ranking() if tournament else Team.query.order_by(Team.points_for.desc()).all()
 
     # Récupérer les scores par tour
-    teams_scores, round_numbers = tournament.get_scores_by_round()
-    teams_scores.sort(key=lambda x: x['team_points_for'], reverse=True)
+    teams_scores, round_numbers = tournament.get_scores_by_round() if tournament else ([], [])
 
-    return render_template('ranking.html', teams=teams, teams_scores=teams_scores, round_numbers=round_numbers)
+    return render_template('ranking.html', teams=teams, teams_scores=teams_scores, round_numbers=round_numbers, tournament=tournament)
 
 
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
+    global tournament
+    
     if request.method == 'POST':
         if 'reset_tournament' in request.form:
             tournament.reset_tournament()
@@ -253,6 +262,13 @@ def admin():
             if len(tournament.get_teams()) % 2 != 0:
                 flash("Le nombre d'équipes doit être pair pour commencer le tournoi.", 'error')
                 return redirect(url_for('admin'))
+
+            # Save prevent_duplicate_matches setting before starting
+            prevent_duplicate = 'prevent_duplicate_matches' in request.form
+            tournament_obj = Tournament.query.first()
+            if tournament_obj:
+                tournament_obj.prevent_duplicate_matches = prevent_duplicate
+                db.session.commit()
 
             if not Match.query.first():
                 if not tournament.generate_first_round_matches():
@@ -291,8 +307,21 @@ def admin():
             else:
                 flash("Impossible de supprimer l'équipe. Le tournoi a peut-être déjà commencé ou l'équipe n'existe pas.", 'error')
             return redirect(url_for('admin'))
+        
+        elif 'update_settings' in request.form:
+            ranking_system = request.form.get('ranking_system')
+            if ranking_system in ['points_sum', 'soccer_style']:
+                tournament_obj = Tournament.query.first()
+                if tournament_obj:
+                    tournament_obj.ranking_system = ranking_system
+                    db.session.add(tournament_obj)
+                    db.session.commit()
+                    flash(f"Système de classement mis à jour.", 'success')
+            return redirect(url_for('admin'))
 
     teams = tournament.get_teams()
+    tournament_started = tournament.has_started()
+    
     list_non_closed_matches = Match.query.filter(
         and_(
             Match.is_closed == False,
@@ -302,11 +331,11 @@ def admin():
     matches_not_closed = []
     for match in list_non_closed_matches:
         matches_not_closed.append({
-            'team1': Team.query.get(match.team1_id).name,
-            'team2': Team.query.get(match.team2_id).name,
+            'team1': match.team1.name,
+            'team2': match.team2.name,
             'match_id': match.id
         })
-    return render_template('admin.html', teams=teams, matches_not_closed = matches_not_closed)
+    return render_template('admin.html', teams=teams, matches_not_closed=matches_not_closed, tournament=tournament, tournament_started=tournament_started)
 
 @app.route('/update_match_result/<int:match_id>', methods=['POST'])
 @login_required

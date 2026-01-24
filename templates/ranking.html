@@ -3,6 +3,45 @@
 {% block content %}
     <h1>Classement</h1>
 
+    {% if tournament and tournament.ranking_system == 'soccer_style' %}
+    <!-- Soccer Style Ranking -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="text-muted">3 points pour une victoire, 1 pour un nul, 0 pour une défaite</p>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Équipe</th>
+                            <th>MJ</th>
+                            <th>Pts</th>
+                            <th>PF</th>
+                            <th>PC</th>
+                            <th>Diff</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in teams %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ team.name }}</td>
+                            <td>{{ team.matches_played }}</td>
+                            <td><strong>{{ team.soccer_points }}</strong></td>
+                            <td>{{ team.points_for }}</td>
+                            <td>{{ team.points_against }}</td>
+                            <td>{% if team.point_difference > 0 %}+{% endif %}{{ team.point_difference }}</td>
+                            <td><a href="{{ url_for('team_detail', team_id=team.id) }}" class="btn btn-sm btn-info">Voir</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Points Sum Ranking (Original) -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Scores par tour</h5>
@@ -10,19 +49,21 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Équipe</th>
                             <th>Total de points</th>
-                            <!-- <th>Difference de Points</th> -->
                             {% for round_num in round_numbers %}
                                 <th>Tour {{ round_num }}</th>
                             {% endfor %}
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for team_score in teams_scores %}
                         <tr>
+                            <td>{{ loop.index }}</td>
                             <td>{{ team_score.team_name }}</td>
-                            <td>{{ team_score.team_points_for }}</td>
+                            <td><strong>{{ team_score.team_points_for }}</strong></td>
                             {% for round_num in round_numbers %}
                                 <td>
                                     {% if team_score | get_item('round_' ~ round_num) is not none %}
@@ -40,4 +81,5 @@
             </div>
         </div>
     </div>
+    {% endif %}
 {% endblock %}

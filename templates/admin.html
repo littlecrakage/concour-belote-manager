@@ -35,9 +35,39 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Commencer le Tournoi</h5>
-                    <p class="card-text">Ce bouton générera les premiers matchs du tournoi en fonction du classement.</p>
+                    <p class="card-text">Ce bouton générera les premiers matchs du tournoi.</p>
                     <form method="POST">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="prevent_duplicate" name="prevent_duplicate_matches" 
+                                   value="on" {% if tournament and tournament.prevent_duplicate_matches %}checked{% endif %}
+                                   {% if tournament_started %}disabled{% endif %}>
+                            <label class="form-check-label" for="prevent_duplicate">
+                                Éviter les rematches (empêcher deux équipes de jouer deux fois l'une contre l'autre)
+                            </label>
+                        </div>
                         <button type="submit" name="start_tournament" class="btn btn-success">Commencer le Tournoi</button>
+                    </form>
+                    {% if tournament_started %}
+                        <small class="form-text text-muted mt-2 d-block">Le tournoi a déjà commencé.</small>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Paramètres du Tournoi</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="ranking_system" class="form-label">Système de Classement</label>
+                            <select class="form-select" id="ranking_system" name="ranking_system">
+                                <option value="points_sum" {% if tournament and tournament.ranking_system == 'points_sum' %}selected{% endif %}>Somme des Points</option>
+                                <option value="soccer_style" {% if tournament and tournament.ranking_system == 'soccer_style' %}selected{% endif %}>Style Football (3V-1N-0D)</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                <strong>Somme des Points:</strong> Classement basé sur la somme totale des points marqués<br>
+                                <strong>Style Football:</strong> 3 points pour une victoire, 1 pour un match nul, 0 pour une défaite
+                            </small>
+                        </div>
+                        <button type="submit" name="update_settings" class="btn btn-primary">Mettre à jour</button>
                     </form>
                 </div>
             </div>

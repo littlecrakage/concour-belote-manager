@@ -8,8 +8,13 @@ from datetime import datetime
 
 import random
 
-class Tournament():
-
+class Tournament(db.Model):
+    __tablename__ = 'tournaments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    ranking_system = db.Column(db.String(50), default='points_sum')  # 'points_sum' or 'soccer_style'
+    prevent_duplicate_matches = db.Column(db.Boolean, default=False)
+    
     current_round = 0
 
     def add_team(self, name):
@@ -45,13 +50,49 @@ class Tournament():
         min_matches = db.session.query(func.min(Team.matches_played)).scalar()
         return (min_matches if min_matches is not None else 0) + 1
 
-
     def get_ranking(self):
-        return Team.query.order_by(
-            Team.points_for.desc(),
-            (Team.points_for - Team.points_against).desc(),
-            Team.points_against.asc()
+        """Get teams ranked by the configured ranking system"""
+        teams = Team.query.all()
+        
+        if self.ranking_system == 'soccer_style':
+            # Calculate soccer points for each team
+            for team in teams:
+                team.soccer_points = self._calculate_soccer_points(team)
+                team.point_difference = team.points_for - team.points_against
+            
+            # Sort by soccer points, then point difference, then points for
+            teams.sort(key=lambda t: (-t.soccer_points, -t.point_difference, -t.points_for))
+        else:
+            # Default: sort by points_for (sum of points)
+            teams.sort(key=lambda t: (-t.points_for, -(t.points_for - t.points_against), t.points_against))
+        
+        return teams
+    
+    def _calculate_soccer_points(self, team):
+        """Calculate soccer-style points: 3 for win, 1 for draw, 0 for loss"""
+        points = 0
+        
+        # Get all completed matches for this team
+        matches = Match.query.filter(
+            ((Match.team1_id == team.id) | (Match.team2_id == team.id)) &
+            (Match.score1.isnot(None))
         ).all()
+        
+        for match in matches:
+            if match.team1_id == team.id:
+                team_score = match.score1
+                opponent_score = match.score2
+            else:
+                team_score = match.score2
+                opponent_score = match.score1
+            
+            if team_score > opponent_score:
+                points += 3  # Win
+            elif team_score == opponent_score:
+                points += 1  # Draw
+            # Loss = 0 points
+        
+        return points
 
     def remove_team(self, team_name):
         # Trouver l'équipe par son nom
@@ -91,6 +132,13 @@ class Tournament():
     def has_unplayed_matches(self):
         return Match.query.filter(Match.score1.is_(None)).first() is not None
 
+    def have_teams_played(self, team1_id, team2_id):
+        """Check if two teams have already played against each other"""
+        return Match.query.filter(
+            ((Match.team1_id == team1_id) & (Match.team2_id == team2_id)) |
+            ((Match.team1_id == team2_id) & (Match.team2_id == team1_id))
+        ).first() is not None
+
     def generate_next_round(self):
         if self.has_unplayed_matches():
             return False  # Il reste des matchs non joués
@@ -104,7 +152,11 @@ class Tournament():
         if len(teams) % 2 != 0:
             return False
 
-        # Générer les matchs pour le prochain tour : 1er vs 2ème, 3ème vs 4ème, etc.
+        # If prevent_duplicate_matches is enabled, use smart pairing
+        if self.prevent_duplicate_matches:
+            return self._generate_round_no_duplicates(teams)
+        
+        # Default: Générer les matchs pour le prochain tour : 1er vs 2ème, 3ème vs 4ème, etc.
         table_number = 0
         for i in range(0, len(teams), 2):
             table_number += 1
@@ -112,6 +164,40 @@ class Tournament():
                 match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number = table_number,round_number=self.get_current_round())
                 db.session.add(match)
 
+        db.session.commit()
+        return True
+    
+    def _generate_round_no_duplicates(self, teams):
+        """Generate matches ensuring no team plays the same opponent twice"""
+        available = list(teams)
+        matches_to_create = []
+        table_number = 0
+        
+        while len(available) >= 2:
+            team1 = available.pop(0)
+            paired = False
+            
+            # Try to find an opponent that team1 hasn't played yet
+            for i, team2 in enumerate(available):
+                if not self.have_teams_played(team1.id, team2.id):
+                    table_number += 1
+                    matches_to_create.append((team1.id, team2.id, table_number))
+                    available.pop(i)
+                    paired = True
+                    break
+            
+            # If no valid opponent found, pair with the first available (duplicate match)
+            if not paired and available:
+                table_number += 1
+                team2 = available.pop(0)
+                matches_to_create.append((team1.id, team2.id, table_number))
+        
+        # Create all matches
+        current_round = self.get_current_round()
+        for team1_id, team2_id, table_num in matches_to_create:
+            match = Match(team1_id=team1_id, team2_id=team2_id, table_number=table_num, round_number=current_round)
+            db.session.add(match)
+        
         db.session.commit()
         return True
 
@@ -145,8 +231,12 @@ class Tournament():
         rounds = db.session.query(Match.round_number).distinct().order_by(Match.round_number).all()
         round_numbers = [round[0] for round in rounds if round[0] is not None]
 
-        # Récupérer toutes les équipes
-        teams = Team.query.order_by(Team.name).all()
+        # Récupérer toutes les équipes triées par points (classement)
+        teams = Team.query.order_by(
+            Team.points_for.desc(),
+            (Team.points_for - Team.points_against).desc(),
+            Team.points_against.asc()
+        ).all()
         
         # Batch-fetch all matches at once instead of querying per-team-per-round
         all_matches = Match.query.all()
