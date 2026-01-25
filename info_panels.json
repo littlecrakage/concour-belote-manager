@@ -40,6 +40,10 @@
         ]
       },
       {
+        "heading": "🔄 Mode Anti-Doublons:",
+        "content": "Si activé dans les paramètres, les équipes ne pourront pas s'affronter plus d'une fois pendant le tournoi. Les matchs sont générés automatiquement en tenant compte de cette règle."
+      },
+      {
         "heading": "Conseils:",
         "content": "Assurez-vous que les scores sont correctement saisis. Les matchs peuvent être modifiés après enregistrement si nécessaire dans l'onglet Admin ⚠️ Uniquement pour le tour en cours ⚠️."
       }
@@ -63,6 +67,13 @@
           "Commencer: Lance le tournoi avec les équipes enregistrées",
           "Réinitialiser: Efface tous les matchs et scores (garde les équipes)",
           "Modifier un résultat: Changez les scores des matchs déjà enregistrés"
+        ]
+      },
+      {
+        "heading": "🆕 Paramètres du Tournoi:",
+        "list_items": [
+          "Système de classement: Choisissez comment les équipes sont classées (par somme de points ou par victoires)",
+          "Éviter les doublons: Activez cette option pour empêcher que deux équipes s'affrontent plus d'une fois"
         ]
       },
       {

@@ -13,6 +13,11 @@
                     <h5 class="card-title">Générer le prochain tour</h5>
                     <form method="POST">
                         <button type="submit" name="generate_next_round" class="btn btn-primary">Générer le prochain tour</button>
+                        {% if tournament and tournament.prevent_duplicate_matches %}
+                        <small class="text-muted d-block mt-2">🔒 Anti-doublons activé</small>
+                        {% else %}
+                        <small class="text-muted d-block mt-2">🔓 Anti-doublons désactivé</small>
+                        {% endif %}
                     </form>
                 </div>
             </div>
