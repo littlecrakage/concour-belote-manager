@@ -2,12 +2,17 @@
 
 {% block content %}
     <h1>Classement</h1>
+    
+    {% if tournament and tournament.ranking_system == 'soccer_style' %}
+    <small class="text-muted d-block mb-3">📊 Système: Points (3-1-0) | Victoire: 3 pts, Nul: 1 pt, Défaite: 0 pt</small>
+    {% else %}
+    <small class="text-muted d-block mb-3">📊 Système: Somme des points | Classement basé sur le total des points marqués</small>
+    {% endif %}
 
     {% if tournament and tournament.ranking_system == 'soccer_style' %}
     <!-- Soccer Style Ranking -->
     <div class="card mb-4">
         <div class="card-body">
-            <p class="text-muted">3 points pour une victoire, 1 pour un nul, 0 pour une défaite</p>
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
@@ -44,7 +49,6 @@
     <!-- Points Sum Ranking (Original) -->
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">Scores par tour</h5>
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
