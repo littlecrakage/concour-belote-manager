@@ -45,14 +45,14 @@ migrate = Migrate(app, db)  # Ajoutez cette ligne pour configurer Flask-Migrate
 
 db.init_app(app)
 
-with app.app_context():
-    db.create_all()
-
 from models.team import Team, Player
 from models.match import Match
 from models.tournament import Tournament
 from models.user import User
 from sqlalchemy.orm import aliased 
+
+with app.app_context():
+    db.create_all()
 
 # Configuration de Flask-Login
 login_manager.init_app(app)
