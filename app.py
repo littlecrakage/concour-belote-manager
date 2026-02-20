@@ -1,4 +1,5 @@
 # app.py
+from datetime import datetime, timedelta
 import os
 import json
 from flask import Flask, render_template, request, redirect, url_for, flash
@@ -43,6 +44,9 @@ migrate = Migrate(app, db)  # Ajoutez cette ligne pour configurer Flask-Migrate
 
 
 db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 from models.team import Team, Player
 from models.match import Match
@@ -460,7 +464,7 @@ def cleanup_expired():
     """Delete tournaments older than 2 weeks."""
     from models.tournament import Tournament
     expired = Tournament.query.filter(
-        Tournament.created_at < datetime.utcnow() - timedelta(weeks=2)
+        Tournament.created_at < datetime.timezone.utc - timedelta(weeks=2)
     ).all()
     
     count = len(expired)

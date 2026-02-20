@@ -4,7 +4,7 @@ from sqlalchemy import func, or_
 from extensions import db
 from models.team import Team
 from models.match import Match
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import random
 
