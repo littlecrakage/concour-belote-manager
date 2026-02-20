@@ -12,43 +12,53 @@ class Tournament(db.Model):
     __tablename__ = 'tournaments'
     
     id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
     ranking_system = db.Column(db.String(50), default='points_sum')  # 'points_sum' or 'soccer_style'
     prevent_duplicate_matches = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     current_round = 0
 
     def add_team(self, name):
         if self.has_started():
-            return False  # Ne pas ajouter d'équipe si le tournoi a commencé
-
-        if Team.query.filter_by(name=name).first():
-            return False  # Équipe déjà existante
-
-        new_team = Team(name=name)
+            return False
+        # Scope uniqueness check to THIS tournament
+        if Team.query.filter_by(name=name, tournament_id=self.id).first():
+            return False
+        new_team = Team(name=name, tournament_id=self.id)
         db.session.add(new_team)
         db.session.commit()
         return True
 
     def has_started(self):
-        return Match.query.filter(Match.score1.isnot(None)).first() is not None
+        return Match.query.filter(
+            Match.tournament_id == self.id,
+            Match.score1.isnot(None)
+        ).first() is not None
 
     def get_teams(self):
-        """Récupère toutes les équipes triées par nom."""
-        return Team.query.order_by(Team.name).all()
+        return Team.query.filter_by(tournament_id=self.id).order_by(Team.name).all()
 
     def get_matches(self):
-        return Match.query.all()
+        return Match.query.filter_by(tournament_id=self.id).all()
 
     def get_unplayed_matches(self):
-        return Match.query.filter(Match.score1.is_(None)).all()
+        return Match.query.filter_by(
+            tournament_id=self.id
+        ).filter(Match.score1.is_(None)).all()
 
     def get_played_matches(self):
-        return Match.query.filter(Match.score1.isnot(None)).all()
+        return Match.query.filter_by(
+            tournament_id=self.id
+        ).filter(Match.score1.isnot(None)).all()
     
 
     def get_current_round(self):
-        min_matches = db.session.query(func.min(Team.matches_played)).scalar()
-        return (min_matches if min_matches is not None else 0) + 1
+        result = db.session.query(func.max(Match.round_number)).filter(
+            Match.tournament_id == self.id
+        ).scalar()
+        return result or 0
 
     def get_ranking(self):
         """Get teams ranked by the configured ranking system"""
@@ -94,9 +104,9 @@ class Tournament(db.Model):
         
         return points
 
-    def remove_team(self, team_name):
+    def remove_team(self, team_id):
         # Trouver l'équipe par son nom
-        team = Team.query.filter_by(name=team_name).first()
+        team = Team.query.filter_by(id=team_id, tournament_id=self.id).first()
         if not team:
             return False  # Équipe non trouvée
 
@@ -117,32 +127,32 @@ class Tournament(db.Model):
         return True
 
     def reset_tournament(self):
-        teams = Team.query.all()
+        Match.query.filter_by(tournament_id=self.id).delete()
+        teams = Team.query.filter_by(tournament_id=self.id).all()
         for team in teams:
-            team.matches_played = 0
             team.points_for = 0
             team.points_against = 0
-
-        # Supprimer tous les matchs
-        Match.query.delete()
-
         db.session.commit()
-        return True
 
     def has_unplayed_matches(self):
-        return Match.query.filter(Match.score1.is_(None)).first() is not None
+        return Match.query.filter(Match.tournament_id == self.id,
+                                  Match.score1.is_(None)).first() is not None
 
     def have_teams_played(self, team1_id, team2_id):
-        """Check if two teams have already played against each other"""
         return Match.query.filter(
-            ((Match.team1_id == team1_id) & (Match.team2_id == team2_id)) |
-            ((Match.team1_id == team2_id) & (Match.team2_id == team1_id))
+            Match.tournament_id == self.id,
+            or_(
+                (Match.team1_id == team1_id) & (Match.team2_id == team2_id),
+                (Match.team1_id == team2_id) & (Match.team2_id == team1_id)
+            )
         ).first() is not None
 
     def generate_next_round(self):
         if self.has_unplayed_matches():
             return False  # Il reste des matchs non joués
-        Match.query.filter(Match.is_closed.isnot(True)).update({'is_closed': True})
+        Match.query.filter(
+            Match.tournament_id == self.id,
+            Match.is_closed.isnot(True)).update({'is_closed': True})
 
         teams = self.get_ranking()
 
@@ -161,7 +171,7 @@ class Tournament(db.Model):
         for i in range(0, len(teams), 2):
             table_number += 1
             if i + 1 < len(teams):
-                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number = table_number,round_number=self.get_current_round())
+                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number = table_number,round_number=self.get_current_round(),tournament_id=self.id )
                 db.session.add(match)
 
         db.session.commit()
@@ -195,13 +205,19 @@ class Tournament(db.Model):
         # Create all matches
         current_round = self.get_current_round()
         for team1_id, team2_id, table_num in matches_to_create:
-            match = Match(team1_id=team1_id, team2_id=team2_id, table_number=table_num, round_number=current_round)
-            db.session.add(match)
-        
+            match = Match(
+                team1_id=team1_id,
+                team2_id=team2_id,
+                table_number=table_num,
+                round_number=current_round,
+                tournament_id=self.id
+                )
+            db.session.add(match) 
         db.session.commit()
         return True
 
     def generate_first_round_matches(self):
+        
         Match.query.filter_by(is_closed=False).update({'is_closed': True})
         db.session.commit()
 
@@ -218,8 +234,9 @@ class Tournament(db.Model):
             table_number += 1
             team1 = teams[i]
             team2 = teams[i + 1]
+            tournament_id=self.id
 
-            match = Match(team1_id=team1.id, team2_id=team2.id, table_number = table_number, round_number=self.get_current_round())
+            match = Match(team1_id=team1.id, team2_id=team2.id, table_number = table_number, round_number=self.get_current_round(), tournament_id=tournament_id)
             
             db.session.add(match)
 
@@ -268,6 +285,19 @@ class Tournament(db.Model):
             teams_scores.append(team_data)
 
         return teams_scores, round_numbers
+    
+    @property
+    def expires_at(self):
+        return self.created_at + timedelta(weeks=2)
+    
+    @property
+    def is_expired(self):
+        return datetime.utcnow() > self.expires_at
+    
+    @property
+    def days_remaining(self):
+        delta = self.expires_at - datetime.utcnow()
+        return max(0, delta.days)
 
 
 
