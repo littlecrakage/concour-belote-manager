@@ -5,7 +5,6 @@ class Team(db.Model):
     __tablename__ = 'teams'
 
     id = db.Column(db.Integer, primary_key=True)
-    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
     name = db.Column(db.String(80), unique=True, nullable=False)
     matches_played = db.Column(db.Integer, default=0)
     points_for = db.Column(db.Integer, default=0)

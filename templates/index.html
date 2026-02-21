@@ -1,90 +1,34 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <!-- Hero Section -->
-    <div class="py-5 mb-5 text-center border-bottom">
-        <h1 class="display-5 fw-bold">Gestionnaire de Tournoi de Belote</h1>
-        <p class="col-lg-8 mx-auto lead text-muted">
-            Créez et gérez vos tournois de belote en ligne. Suivi des scores, classements en temps réel, et gestion des équipes simplifiée.
-        </p>
-        <a href="{{ url_for('new_tournament') }}" class="btn btn-primary btn-lg mt-3">
-            ➕ Créer un tournoi
-        </a>
-    </div>
-
-    <!-- Features -->
-    <div class="row text-center mb-5">
+    <h1 class="mb-4">Gestionnaire de Tournoi de Belote</h1>
+    <div class="row">
         <div class="col-md-4">
-            <div class="card h-100 border-0 bg-light">
+            <div class="card">
                 <div class="card-body">
-                    <div class="fs-1 mb-2">🏆</div>
-                    <h5 class="card-title">Classement en temps réel</h5>
-                    <p class="card-text text-muted">Suivez le classement de vos équipes au fur et à mesure des matchs.</p>
+                    <h5 class="card-title">Administration</h5>
+                    <p class="card-text">Gérez le tournois.</p>
+                    <a href="{{ url_for('admin') }}" class="btn btn-primary">Administration</a>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 border-0 bg-light">
+            <div class="card">
                 <div class="card-body">
-                    <div class="fs-1 mb-2">🎴</div>
-                    <h5 class="card-title">Gestion des matchs</h5>
-                    <p class="card-text text-muted">Générez les tours automatiquement et enregistrez les scores facilement.</p>
+                    <h5 class="card-title">Matchs</h5>
+                    <p class="card-text">Gérez les matchs et enregistrez les scores.</p>
+                    <a href="{{ url_for('matches') }}" class="btn btn-primary">Aller aux matchs</a>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card h-100 border-0 bg-light">
+            <div class="card">
                 <div class="card-body">
-                    <div class="fs-1 mb-2">👥</div>
-                    <h5 class="card-title">Gestion des équipes</h5>
-                    <p class="card-text text-muted">Ajoutez vos équipes et joueurs en quelques clics.</p>
+                    <h5 class="card-title">Classement</h5>
+                    <p class="card-text">Consultez le classement des équipes.</p>
+                    <a href="{{ url_for('ranking') }}" class="btn btn-primary">Voir le classement</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Active Tournaments -->
-    <div class="mb-4">
-        <h2 class="mb-3">Tournois en cours</h2>
-
-        {% if tournaments %}
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {% for t in tournaments %}
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ t.name }}</h5>
-                                <p class="card-text text-muted">
-                                    <small>
-                                        🗓️ Créé le {{ t.created_at.strftime('%d/%m/%Y') }}<br>
-                                        👥 {{ t.get_teams()|length }} équipe(s)
-                                    </small>
-                                </p>
-                            </div>
-                            <div class="card-footer d-flex gap-2">
-                                <a href="{{ url_for('ranking', slug=t.slug) }}" class="btn btn-outline-primary btn-sm">
-                                    Classement
-                                </a>
-                                <a href="{{ url_for('matches', slug=t.slug) }}" class="btn btn-outline-secondary btn-sm">
-                                    Matchs
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
-        {% else %}
-            <div class="alert alert-light text-center text-muted border">
-                Aucun tournoi en cours.<br>
-                <a href="{{ url_for('new_tournament') }}">Créez le premier !</a>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Login shortcut -->
-    <div class="text-center text-muted mt-5">
-        <small>Vous avez déjà un tournoi ? <a href="{{ url_for('login') }}">Connectez-vous ici</a></small>
-    </div>
-
 {% endblock %}
