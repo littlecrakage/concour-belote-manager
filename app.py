@@ -316,10 +316,8 @@ def admin(slug):
                     return redirect(url_for('admin', slug=slug))
                 flash("Les matchs du premier tour ont été générés aléatoirement avec succès.", 'success')
             else:
-                if not tournament.generate_matches():
-                    flash("Impossible de générer les matchs pour les tours suivants.", 'error')
-                    return redirect(url_for('admin', slug=slug))
-                flash("Les matchs ont été générés selon le classement avec succès.", 'success')
+                flash("Le premier tour a deja été lancé", 'error')
+                return redirect(url_for('admin', slug=slug))
             return redirect(url_for('matches', slug=slug))
 
         elif 'add_team' in request.form:
