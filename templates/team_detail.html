@@ -18,9 +18,7 @@
                         <form method="POST" class="mb-3">
                             <div class="input-group">
                                 <input type="text" class="form-control" name="player_name" placeholder="Nom du joueur" required>
-                                {% if is_tournament_admin(tournament) %}
                                 <button type="submit" name="add_player" class="btn btn-primary">Ajouter</button>
-                                {% endif %}
                             </div>
                         </form>
                     {% endif %}
@@ -30,7 +28,7 @@
                                 {{ player.name }}
                                 <form method="POST" class="m-0">
                                     <input type="hidden" name="player_name" value="{{ player.name }}">
-                                    {% if is_tournament_admin(tournament) %}
+                                    {% if is_admin %}
                                     <button type="submit" name="remove_player" class="btn btn-sm btn-danger">Retirer</button>
                                     {% endif %}
                                 </form>
@@ -71,7 +69,5 @@
             </div>
         </div>
     </div>
-    {% if is_tournament_admin(tournament) %}
-    <a href="{{ url_for('admin', slug=tournament.slug) }}" class="btn btn-secondary mt-3">Retour à l'administration</a>
-    {% endif %}
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">Retour à l'administration</a>
 {% endblock %}

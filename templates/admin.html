@@ -76,12 +76,11 @@
                     <h5 class="card-title">Retirer une Équipe</h5>
                     <p class="card-text">Retirez une équipe qui n'a pas encore joué de matchs.</p>
                     <form method="POST">
-                        <input type="hidden" name="action" value="remove_team">
                         <div class="mb-3">
                             <label for="remove_team" class="form-label">Équipe à retirer</label>
                             <select class="form-select" id="remove_team" name="remove_team" required>
                                 {% for team in teams %}
-                                    <option value="{{ team.id }}">{{ team.name }}</option>
+                                    <option value="{{ team.name }}">{{ team.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -112,7 +111,7 @@
                                             Aucun
                                         {% endif %}
                                     </td>
-                                    <td><a href="{{ url_for('team_detail', team_id=team.id, slug=tournament.slug) }}" class="btn btn-sm btn-info">Voir</a></td>
+                                    <td><a href="{{ url_for('team_detail', team_id=team.id) }}" class="btn btn-sm btn-info">Voir</a></td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -123,7 +122,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Modifier un résultat</h5>
-                    <form method="POST" id="updateMatchForm" action="/t/{{ tournament.slug }}/update_match_result/0">
+                    <form method="POST" id="updateMatchForm">
                         <div class="mb-3">
                             <label for="match" class="form-label">Choisir un match</label>
                             <select class="form-select" id="match" name="match_id" required>
@@ -168,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const team2 = selectedOption.getAttribute('data-team2');
 
         // Mettre à jour l'action du formulaire
-        updateMatchForm.action = `/t/{{ tournament.slug }}/update_match_result/${matchId}`;
+        updateMatchForm.action = `/update_match_result/${matchId}`;
 
         // Mettre à jour les labels avec les noms des équipes
         team1ScoreLabel.textContent = `Score ${team1}`;
