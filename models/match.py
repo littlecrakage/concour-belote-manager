@@ -6,6 +6,7 @@ class Match(db.Model):
     __tablename__ = 'matches'
 
     id = db.Column(db.Integer, primary_key=True)
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
     team1_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
     team2_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
     score1 = db.Column(db.Integer, nullable=True)
