@@ -350,6 +350,13 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin', slug=tournament.slug) }}">Admin</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">📥 Exporter</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('export_html', slug=tournament.slug) }}" target="_blank">📄 Page imprimable</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('export_json', slug=tournament.slug) }}">💾 Données JSON</a></li>
+                        </ul>
+                    </li>
                     {% endif %}
                     {% endif %}
                 </ul>

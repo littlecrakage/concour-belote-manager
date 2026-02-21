@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -456,6 +456,85 @@ def is_tournament_admin(tournament):
 @app.template_filter('get_item')
 def get_item(dictionary, key):
     return dictionary.get(key, None)
+
+
+# ── Export ─────────────────────────────────────────────────────────────────────
+
+@app.route('/t/<slug>/export/json')
+def export_json(slug):
+    """Export the full tournament state as a downloadable JSON file."""
+    tournament = Tournament.query.filter_by(slug=slug).first_or_404()
+    teams = tournament.get_ranking()
+    played_matches = tournament.get_played_matches()
+    teams_scores, round_numbers = tournament.get_scores_by_round()
+
+    # Build team data
+    teams_data = []
+    for rank, team in enumerate(teams, start=1):
+        team_dict = {
+            'rank': rank,
+            'name': team.name,
+            'players': [p.name for p in team.players],
+            'matches_played': team.matches_played,
+            'points_for': team.points_for,
+            'points_against': team.points_against,
+            'point_difference': team.points_for - team.points_against,
+        }
+        if tournament.ranking_system == 'soccer_style':
+            team_dict['soccer_points'] = getattr(team, 'soccer_points', 0)
+        teams_data.append(team_dict)
+
+    # Build match history
+    matches_data = []
+    for match in sorted(played_matches, key=lambda m: (m.round_number or 0, m.id)):
+        matches_data.append({
+            'round': match.round_number,
+            'table': match.table_number,
+            'team1': match.team1.name,
+            'team2': match.team2.name,
+            'score1': match.score1,
+            'score2': match.score2,
+            'date': match.date,
+        })
+
+    export = {
+        'tournament': {
+            'name': tournament.name,
+            'slug': tournament.slug,
+            'ranking_system': tournament.ranking_system,
+            'created_at': tournament.created_at.isoformat() if tournament.created_at else None,
+            'total_rounds': tournament.get_current_round(),
+        },
+        'ranking': teams_data,
+        'matches': matches_data,
+        'exported_at': datetime.utcnow().isoformat(),
+    }
+
+    json_str = json.dumps(export, ensure_ascii=False, indent=2)
+    return Response(
+        json_str,
+        mimetype='application/json',
+        headers={'Content-Disposition': f'attachment; filename="tournoi-{tournament.slug}.json"'}
+    )
+
+
+@app.route('/t/<slug>/export')
+def export_html(slug):
+    """Render a self-contained printable HTML page with the full tournament state."""
+    tournament = Tournament.query.filter_by(slug=slug).first_or_404()
+    teams = tournament.get_ranking()
+    played_matches = tournament.get_played_matches()
+    teams_scores, round_numbers = tournament.get_scores_by_round()
+
+    # Sort matches by round then table
+    played_matches_sorted = sorted(played_matches, key=lambda m: (m.round_number or 0, m.table_number or 0))
+
+    return render_template('export.html',
+                           tournament=tournament,
+                           teams=teams,
+                           teams_scores=teams_scores,
+                           round_numbers=round_numbers,
+                           played_matches=played_matches_sorted)
 
 @app.cli.command("cleanup_expired")
 def cleanup_expired():
