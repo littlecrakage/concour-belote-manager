@@ -10,7 +10,10 @@ A web application to organize and manage Belote card game tournaments. This tool
 - **Live Ranking**: View current standings with points, wins, and point differentials
 - **User Authentication**: Secure login system for tournament administrators
 - **Match History**: Track all played and unplayed matches throughout the tournament
-- **Configurable Tournament**: Choose between different ranking systems
+- **Configurable Tournament**: Choose between different ranking systems (sum of points or soccer-style 3V/1N/0D)
+- **Duplicate Match Prevention**: Optionally prevent two teams from facing each other more than once
+- **Flexible Pairing System**: Choose per-tournament between ranked pairing (1st vs 2nd…) or random draw each round
+- **Belote Score Validator**: Optional real-time score verification based on number of manches (162 pts each), belotes (+20) and capots (+90) — with admin override
 - **Info Panels**: Customizable information panels via JSON configuration
 
 ## Tech Stack
@@ -181,7 +184,33 @@ See `INFO_PANELS_README.md` for detailed configuration options.
 
 ### Tournament Settings
 
-Tournament settings (ranking system, duplicate match prevention) can be configured through the admin interface or directly in the database.
+All tournament settings are configured through the admin panel before starting the tournament and are **locked once the first round is generated**.
+
+| Setting | Description |
+|---------|-------------|
+| **Ranking system** | `Somme des Points` (total points) or `Style Football` (3W/1D/0L) |
+| **Éviter les rematches** | Prevent two teams from playing each other more than once |
+| **Activer verification des scores belote** | Enable real-time score validation on the matches page |
+| **Tirage à partir du 2ème tour** | `Classement` (ranked: 1st vs 2nd…) or `Tirage au sort` (random draw each round) |
+
+#### Score Validator formula
+
+When score verification is enabled, the expected total for a match is:
+
+```
+total = (nombre de manches × 162) + (nombre de belotes × 20) + (nombre de capots × 90)
+```
+
+The submit button is disabled if `score1 + score2 ≠ total`. An **Exception admin** checkbox bypasses the check when needed.
+
+#### Production database migrations
+
+When deploying a new version that adds columns, run against your production DB:
+
+```bash
+psql "your-connection-string" -c "ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS verify_belote_scores BOOLEAN DEFAULT true;"
+psql "your-connection-string" -c "ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS pairing_system VARCHAR(20) DEFAULT 'ranked';"
+```
 
 ---
 

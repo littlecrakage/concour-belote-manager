@@ -220,7 +220,7 @@ def matches(slug):
                         'date': match.date
                     })
 
-                return render_template('matches.html', tournament=tournament,  unplayed_matches=unplayed_matches, played_matches=played_matches, error=error)
+                return render_template('matches.html', tournament=tournament,  unplayed_matches=unplayed_matches, played_matches=played_matches, error=error, verify_belote_scores=tournament.verify_belote_scores)
             else:
                 if not tournament.generate_next_round():
                     error = "Impossible de générer le prochain tour."
@@ -234,8 +234,8 @@ def matches(slug):
                             'score2': match.score2,
                             'date': match.date
                         })
-                    
-                    return render_template('matches.html', tournament=tournament, unplayed_matches=unplayed_matches, played_matches=played_matches, error=error)
+
+                    return render_template('matches.html', tournament=tournament, unplayed_matches=unplayed_matches, played_matches=played_matches, error=error, verify_belote_scores=tournament.verify_belote_scores)
                 return redirect(url_for('matches', slug=slug))
 
     # Récupérer les matchs non joués
@@ -273,7 +273,8 @@ def matches(slug):
     tournament=tournament,
     unplayed_matches=unplayed_matches,
     played_matches=played_matches_sorted,
-    current_round=tournament.get_current_round()
+    current_round=tournament.get_current_round(),
+    verify_belote_scores=tournament.verify_belote_scores
 )
 
 @app.route('/t/<slug>/ranking')
@@ -308,6 +309,10 @@ def admin(slug):
 
             prevent_duplicate = 'prevent_duplicate_matches' in request.form
             tournament.prevent_duplicate_matches = prevent_duplicate
+            tournament.verify_belote_scores = 'verify_belote_scores' in request.form
+            pairing_system = request.form.get('pairing_system', 'ranked')
+            if pairing_system in ('ranked', 'random'):
+                tournament.pairing_system = pairing_system
             db.session.commit()
 
             if not Match.query.filter_by(tournament_id=tournament.id).first():
@@ -354,7 +359,7 @@ def admin(slug):
             return redirect(url_for('admin', slug=slug))
 
     teams = tournament.get_teams()
-    tournament_started = tournament.has_started()
+    tournament_started = Match.query.filter_by(tournament_id=tournament.id).first() is not None
 
     list_non_closed_matches = Match.query.filter(
         and_(

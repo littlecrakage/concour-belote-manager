@@ -44,6 +44,14 @@
         "content": "Si activé dans les paramètres, les équipes ne pourront pas s'affronter plus d'une fois pendant le tournoi. Les matchs sont générés automatiquement en tenant compte de cette règle."
       },
       {
+        "heading": "🎲 Tirage au sort:",
+        "content": "Si le mode 'Tirage au sort' est activé, les adversaires sont tirés aléatoirement à chaque tour (tout en respectant la règle anti-doublons si elle est active)."
+      },
+      {
+        "heading": "✅ Vérification des scores:",
+        "content": "Si activée, entrez le nombre de manches, belotes et capots pour valider que score1 + score2 = (manches × 162) + (belotes × 20) + (capots × 90). Le bouton 'Enregistrer' reste grisé tant que le total ne correspond pas. Cochez 'Exception admin' pour forcer l'enregistrement."
+      },
+      {
         "heading": "Conseils:",
         "content": "Assurez-vous que les scores sont correctement saisis. Les matchs peuvent être modifiés après enregistrement si nécessaire dans l'onglet Admin ⚠️ Uniquement pour le tour en cours ⚠️."
       }
@@ -70,11 +78,17 @@
         ]
       },
       {
-        "heading": "🆕 Paramètres du Tournoi:",
+        "heading": "🆕 Options au démarrage du tournoi:",
         "list_items": [
-          "Système de classement: Choisissez comment les équipes sont classées (par somme de points ou par victoires)",
-          "Éviter les doublons: Activez cette option pour empêcher que deux équipes s'affrontent plus d'une fois"
+          "Système de classement: Somme des points ou Style Football (3V/1N/0D)",
+          "Éviter les rematches: Empêche deux équipes de s'affronter plus d'une fois",
+          "Activer vérification des scores belote: Active le validateur de scores sur la page Matchs",
+          "Tirage à partir du 2ème tour: 'Classement' (1er vs 2ème…) ou 'Tirage au sort' (aléatoire à chaque tour)"
         ]
+      },
+      {
+        "heading": "✅ Vérification des scores belote:",
+        "content": "Quand activée, un panneau apparaît lors de la saisie des scores. Entrez le nombre de manches (162 pts chacune), de belotes (+20 pts) et de capots (+90 pts) pour calculer le total attendu. Le bouton d'enregistrement est désactivé si les scores ne correspondent pas. La case 'Exception admin' permet de forcer l'enregistrement si nécessaire."
       },
       {
         "heading": "⚠️ Important:",

@@ -16,6 +16,8 @@ class Tournament(db.Model):
     name = db.Column(db.String(100), nullable=False)
     ranking_system = db.Column(db.String(50), default='points_sum')  # 'points_sum' or 'soccer_style'
     prevent_duplicate_matches = db.Column(db.Boolean, default=False)
+    verify_belote_scores = db.Column(db.Boolean, default=True)
+    pairing_system = db.Column(db.String(20), default='ranked')  # 'ranked' or 'random'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     current_round = 0
@@ -162,16 +164,20 @@ class Tournament(db.Model):
         if len(teams) % 2 != 0:
             return False
 
+        # Random draw: shuffle before pairing
+        if self.pairing_system == 'random':
+            random.shuffle(teams)
+
         # If prevent_duplicate_matches is enabled, use smart pairing
         if self.prevent_duplicate_matches:
             return self._generate_round_no_duplicates(teams)
-        
-        # Default: Générer les matchs pour le prochain tour : 1er vs 2ème, 3ème vs 4ème, etc.
+
+        # Default: pair sequentially (ranked: 1st vs 2nd, 3rd vs 4th… / random: shuffled order)
         table_number = 0
         for i in range(0, len(teams), 2):
             table_number += 1
             if i + 1 < len(teams):
-                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number = table_number,round_number=self.get_current_round(),tournament_id=self.id )
+                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number=table_number, round_number=self.get_current_round(), tournament_id=self.id)
                 db.session.add(match)
 
         db.session.commit()

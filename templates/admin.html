@@ -38,12 +38,39 @@
                     <p class="card-text">Ce bouton générera les premiers matchs du tournoi.</p>
                     <form method="POST">
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="prevent_duplicate" name="prevent_duplicate_matches" 
+                            <input type="checkbox" class="form-check-input" id="prevent_duplicate" name="prevent_duplicate_matches"
                                    value="on" {% if tournament and tournament.prevent_duplicate_matches %}checked{% endif %}
                                    {% if tournament_started %}disabled{% endif %}>
                             <label class="form-check-label" for="prevent_duplicate">
                                 Éviter les rematches (empêcher deux équipes de jouer deux fois l'une contre l'autre)
                             </label>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="verify_belote_scores" name="verify_belote_scores"
+                                   value="on" {% if tournament and tournament.verify_belote_scores != False %}checked{% endif %}
+                                   {% if tournament_started %}disabled{% endif %}>
+                            <label class="form-check-label" for="verify_belote_scores">
+                                Activer verification des scores belote
+                            </label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tirage à partir du 2ème tour</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pairing_system" id="pairing_ranked" value="ranked"
+                                       {% if not tournament or tournament.pairing_system != 'random' %}checked{% endif %}
+                                       {% if tournament_started %}disabled{% endif %}>
+                                <label class="form-check-label" for="pairing_ranked">
+                                    Classement (1er vs 2ème, 3ème vs 4ème…)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pairing_system" id="pairing_random" value="random"
+                                       {% if tournament and tournament.pairing_system == 'random' %}checked{% endif %}
+                                       {% if tournament_started %}disabled{% endif %}>
+                                <label class="form-check-label" for="pairing_random">
+                                    Tirage au sort à chaque tour
+                                </label>
+                            </div>
                         </div>
                         <button type="submit" name="start_tournament" class="btn btn-success">Commencer le Tournoi</button>
                     </form>

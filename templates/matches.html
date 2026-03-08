@@ -48,7 +48,37 @@
                             <input type="number" class="form-control" id="score2" name="score2" min="0" required>
                         </div>
 
-                        <button type="submit" name="record_match" class="btn btn-primary">Enregistrer le score</button>
+                        {% if verify_belote_scores %}
+                        <!-- Vérification des scores belote -->
+                        <div class="mb-3 p-3 border rounded bg-light" id="belote_validator">
+                            <p class="mb-2 fw-semibold text-muted small">Vérification des scores (manches × 162 + 20/belote + 90/capot)</p>
+                            <div class="row g-2 mb-2">
+                                <div class="col-4">
+                                    <label for="nb_manches" class="form-label small mb-1">Nombre de manches</label>
+                                    <input type="number" class="form-control form-control-sm" id="nb_manches" min="1" value="10">
+                                </div>
+                                <div class="col-4">
+                                    <label for="nb_belotes" class="form-label small mb-1">Nombre de belotes</label>
+                                    <input type="number" class="form-control form-control-sm" id="nb_belotes" min="0" value="0">
+                                </div>
+                                <div class="col-4">
+                                    <label for="nb_capots" class="form-label small mb-1">Nombre de capots</label>
+                                    <input type="number" class="form-control form-control-sm" id="nb_capots" min="0" value="0">
+                                </div>
+                            </div>
+                            <div id="score_validation_msg" class="small"></div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex align-items-center gap-3 mt-2">
+                            <button type="submit" name="record_match" class="btn btn-primary" id="submit_score_btn">Enregistrer le score</button>
+                            {% if verify_belote_scores %}
+                            <div class="form-check mb-0">
+                                <input type="checkbox" class="form-check-input" id="admin_exception">
+                                <label class="form-check-label small text-muted" for="admin_exception">Exception admin</label>
+                            </div>
+                            {% endif %}
+                        </div>
                     </form>
                 </div>
             </div>
@@ -126,7 +156,7 @@
         const team2ScoreLabel = document.getElementById('team2_score_label');
 
         // Sélectionner le premier match par défaut
-        if (matchSelect.options.length > 0) {
+        if (matchSelect && matchSelect.options.length > 0) {
             const firstOption = matchSelect.options[0];
             const team1 = firstOption.getAttribute('data-team1');
             const team2 = firstOption.getAttribute('data-team2');
@@ -136,14 +166,68 @@
         }
 
         // Mettre à jour les labels lors du changement de sélection
-        matchSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const team1 = selectedOption.getAttribute('data-team1');
-            const team2 = selectedOption.getAttribute('data-team2');
+        if (matchSelect) {
+            matchSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const team1 = selectedOption.getAttribute('data-team1');
+                const team2 = selectedOption.getAttribute('data-team2');
 
-            team1ScoreLabel.textContent = `Score ${team1}`;
-            team2ScoreLabel.textContent = `Score ${team2}`;
-        });
+                team1ScoreLabel.textContent = `Score ${team1}`;
+                team2ScoreLabel.textContent = `Score ${team2}`;
+            });
+        }
+
+        {% if verify_belote_scores %}
+        // --- Vérification des scores belote ---
+        const score1Input = document.getElementById('score1');
+        const score2Input = document.getElementById('score2');
+        const nbManchesInput = document.getElementById('nb_manches');
+        const nbBelotesInput = document.getElementById('nb_belotes');
+        const nbCapotsInput = document.getElementById('nb_capots');
+        const validationMsg = document.getElementById('score_validation_msg');
+        const submitBtn = document.getElementById('submit_score_btn');
+        const adminException = document.getElementById('admin_exception');
+
+        function validateScores() {
+            const score1 = parseInt(score1Input.value) || 0;
+            const score2 = parseInt(score2Input.value) || 0;
+            const manches = parseInt(nbManchesInput.value) || 0;
+            const belotes = parseInt(nbBelotesInput.value) || 0;
+            const capots = parseInt(nbCapotsInput.value) || 0;
+
+            const expected = (manches * 162) + (belotes * 20) + (capots * 90);
+            const actual = score1 + score2;
+
+            if (score1Input.value === '' || score2Input.value === '') {
+                validationMsg.innerHTML = '';
+                submitBtn.disabled = false;
+                submitBtn.classList.replace('btn-secondary', 'btn-primary');
+                return;
+            }
+
+            if (actual === expected) {
+                validationMsg.innerHTML = `<span class="text-success">✔ Total correct : ${actual} / ${expected}</span>`;
+                submitBtn.disabled = false;
+                submitBtn.classList.replace('btn-secondary', 'btn-primary');
+            } else {
+                validationMsg.innerHTML = `<span class="text-danger">✘ Total incorrect : ${actual} au lieu de ${expected} (différence : ${actual - expected > 0 ? '+' : ''}${actual - expected})</span>`;
+                if (adminException && adminException.checked) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.replace('btn-secondary', 'btn-primary');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.replace('btn-primary', 'btn-secondary');
+                }
+            }
+        }
+
+        score1Input.addEventListener('input', validateScores);
+        score2Input.addEventListener('input', validateScores);
+        nbManchesInput.addEventListener('input', validateScores);
+        nbBelotesInput.addEventListener('input', validateScores);
+        nbCapotsInput.addEventListener('input', validateScores);
+        adminException.addEventListener('change', validateScores);
+        {% endif %}
     });
 </script>
 {% endblock %}
