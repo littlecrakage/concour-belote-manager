@@ -173,11 +173,12 @@ class Tournament(db.Model):
             return self._generate_round_no_duplicates(teams)
 
         # Default: pair sequentially (ranked: 1st vs 2nd, 3rd vs 4th… / random: shuffled order)
+        next_round = self.get_current_round() + 1
         table_number = 0
         for i in range(0, len(teams), 2):
             table_number += 1
             if i + 1 < len(teams):
-                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number=table_number, round_number=self.get_current_round(), tournament_id=self.id)
+                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number=table_number, round_number=next_round, tournament_id=self.id)
                 db.session.add(match)
 
         db.session.commit()
@@ -209,13 +210,13 @@ class Tournament(db.Model):
                 matches_to_create.append((team1.id, team2.id, table_number))
         
         # Create all matches
-        current_round = self.get_current_round()
+        next_round = self.get_current_round() + 1
         for team1_id, team2_id, table_num in matches_to_create:
             match = Match(
                 team1_id=team1_id,
                 team2_id=team2_id,
                 table_number=table_num,
-                round_number=current_round,
+                round_number=next_round,
                 tournament_id=self.id
                 )
             db.session.add(match) 
@@ -242,7 +243,7 @@ class Tournament(db.Model):
             team2 = teams[i + 1]
             tournament_id=self.id
 
-            match = Match(team1_id=team1.id, team2_id=team2.id, table_number = table_number, round_number=self.get_current_round(), tournament_id=tournament_id)
+            match = Match(team1_id=team1.id, team2_id=team2.id, table_number=table_number, round_number=1, tournament_id=tournament_id)
             
             db.session.add(match)
 

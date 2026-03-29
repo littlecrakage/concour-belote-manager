@@ -21,6 +21,11 @@ class Match(db.Model):
     team2 = db.relationship('Team', foreign_keys=[team2_id], lazy='joined')
 
     def record_score(self, score1, score2):
+        if self.score1 is not None:
+            # Score already recorded — treat as an update to avoid doubling team stats
+            self.update_score(score1, score2)
+            return
+
         self.score1 = score1
         self.score2 = score2
         self.date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
