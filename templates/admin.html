@@ -122,7 +122,7 @@
                             <label for="remove_team" class="form-label">Équipe à retirer</label>
                             <select class="form-select" id="remove_team" name="remove_team" required>
                                 {% for team in teams %}
-                                    <option value="{{ team.id }}">#{{ team.id }} {{ team.name }}</option>
+                                    <option value="{{ team.id }}">#{{ team.tournament_team_number }} – {{ team.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -140,13 +140,14 @@
                                 <th>N°</th>
                                 <th>Équipe</th>
                                 <th>Joueurs</th>
+                                <th>Table fixe</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for team in teams %}
                                 <tr>
-                                    <td>#{{ team.id }}</td>
+                                    <td>#{{ team.tournament_team_number }}</td>
                                     <td>{{ team.name }}</td>
                                     <td>
                                         {% if team.players %}
@@ -154,6 +155,12 @@
                                         {% else %}
                                             Aucun
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('set_fixed_table', slug=tournament.slug, team_id=team.id) }}" class="d-flex gap-1">
+                                            <input type="number" name="fixed_table" class="form-control form-control-sm" style="width:80px" min="1" value="{{ team.fixed_table if team.fixed_table else '' }}" placeholder="–">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">✓</button>
+                                        </form>
                                     </td>
                                     <td><a href="{{ url_for('team_detail', team_id=team.id, slug=tournament.slug) }}" class="btn btn-sm btn-info">Voir</a></td>
                                 </tr>

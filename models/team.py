@@ -10,6 +10,8 @@ class Team(db.Model):
     matches_played = db.Column(db.Integer, default=0)
     points_for = db.Column(db.Integer, default=0)
     points_against = db.Column(db.Integer, default=0)
+    fixed_table = db.Column(db.Integer, nullable=True)
+    tournament_team_number = db.Column(db.Integer, nullable=True)
     players = db.relationship('Player', backref='team', lazy=True)
 
     def add_player(self, player_name):

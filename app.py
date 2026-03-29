@@ -42,7 +42,6 @@ from extensions import db, login_manager
 
 migrate = Migrate(app, db)  # Ajoutez cette ligne pour configurer Flask-Migrate
 
-
 db.init_app(app)
 
 from models.team import Team, Player
@@ -52,6 +51,8 @@ from models.user import User
 from sqlalchemy.orm import aliased 
 
 with app.app_context():
+    from flask_migrate import upgrade as flask_db_upgrade
+    flask_db_upgrade()
     db.create_all()
 
 # Configuration de Flask-Login
@@ -250,8 +251,8 @@ def matches(slug):
         unplayed_matches.append({
             'team1': match.team1.name,
             'team2': match.team2.name,
-            'team1_id': match.team1.id,
-            'team2_id': match.team2.id,
+            'team1_num': match.team1.tournament_team_number,
+            'team2_num': match.team2.tournament_team_number,
             'match_id': match.id,
             'table_number': match.table_number
         })
@@ -263,8 +264,8 @@ def matches(slug):
         played_matches.append({
             'team1': match.team1.name,
             'team2': match.team2.name,
-            'team1_id': match.team1.id,
-            'team2_id': match.team2.id,
+            'team1_num': match.team1.tournament_team_number,
+            'team2_num': match.team2.tournament_team_number,
             'score1': match.score1,
             'score2': match.score2,
             'table_number': match.table_number,
@@ -336,7 +337,7 @@ def admin(slug):
 
             if tournament.add_team(team_name):
                 new_team = Team.query.filter_by(name=team_name, tournament_id=tournament.id).first()
-                flash(f"L'équipe {team_name} (N°{new_team.id}) a été ajoutée avec succès.", 'success')
+                flash(f"L'équipe {team_name} (N°{new_team.tournament_team_number}) a été ajoutée avec succès.", 'success')
             else:
                 flash("Impossible d'ajouter l'équipe. Le tournoi a peut-être déjà commencé ou l'équipe existe déjà.", 'error')
             return redirect(url_for('admin', slug=slug))
@@ -387,6 +388,22 @@ def admin(slug):
                            teams=teams,
                            matches_not_closed=matches_not_closed,
                            tournament_started=tournament_started)
+
+@app.route('/t/<slug>/team/<int:team_id>/set_fixed_table', methods=['POST'])
+@tournament_admin_required
+def set_fixed_table(slug, team_id):
+    tournament = Tournament.query.filter_by(slug=slug).first_or_404()
+    team = Team.query.filter_by(id=team_id, tournament_id=tournament.id).first_or_404()
+    value = request.form.get('fixed_table', '').strip()
+    if value == '':
+        team.fixed_table = None
+        flash(f"Table fixe retirée pour l'équipe {team.name}.", 'success')
+    else:
+        team.fixed_table = int(value)
+        flash(f"Table fixe {value} assignée à l'équipe {team.name}.", 'success')
+    db.session.commit()
+    return redirect(url_for('admin', slug=slug))
+
 
 @app.route('/t/<slug>/fix_round_numbers', methods=['POST'])
 @tournament_admin_required

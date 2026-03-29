@@ -28,7 +28,8 @@ class Tournament(db.Model):
         # Scope uniqueness check to THIS tournament
         if Team.query.filter_by(name=name, tournament_id=self.id).first():
             return False
-        new_team = Team(name=name, tournament_id=self.id)
+        next_number = Team.query.filter_by(tournament_id=self.id).count() + 1
+        new_team = Team(name=name, tournament_id=self.id, tournament_team_number=next_number)
         db.session.add(new_team)
         db.session.commit()
         return True
@@ -169,77 +170,99 @@ class Tournament(db.Model):
 
         # Default: pair sequentially (ranked: 1st vs 2nd, 3rd vs 4th… / random: shuffled order)
         next_round = self.get_current_round() + 1
-        table_number = 0
-        for i in range(0, len(teams), 2):
-            table_number += 1
-            if i + 1 < len(teams):
-                match = Match(team1_id=teams[i].id, team2_id=teams[i + 1].id, table_number=table_number, round_number=next_round, tournament_id=self.id)
-                db.session.add(match)
+        pairs = [(teams[i], teams[i + 1]) for i in range(0, len(teams), 2) if i + 1 < len(teams)]
+        table_numbers = self._assign_tables(pairs)
+        for (team1, team2), table_num in zip(pairs, table_numbers):
+            match = Match(team1_id=team1.id, team2_id=team2.id, table_number=table_num, round_number=next_round, tournament_id=self.id)
+            db.session.add(match)
 
         db.session.commit()
         return True
-    
+
+    def _assign_tables(self, pairs):
+        """Assign table numbers respecting fixed tables for teams with disabilities.
+        Teams with a fixed_table always play at that table.
+        If two fixed-table teams face each other, one is chosen randomly.
+        All other matches fill the remaining table numbers."""
+        num_matches = len(pairs)
+        all_tables = list(range(1, num_matches + 1))
+        assigned = [None] * num_matches
+        fixed_tables_taken = set()
+
+        # First pass: assign fixed tables
+        for i, (t1, t2) in enumerate(pairs):
+            ft1 = t1.fixed_table
+            ft2 = t2.fixed_table
+            chosen = None
+            if ft1 and ft2:
+                chosen = random.choice([ft1, ft2])
+            elif ft1:
+                chosen = ft1
+            elif ft2:
+                chosen = ft2
+
+            if chosen and chosen not in fixed_tables_taken:
+                assigned[i] = chosen
+                fixed_tables_taken.add(chosen)
+
+        # Second pass: fill remaining matches with free tables
+        free_tables = [t for t in all_tables if t not in fixed_tables_taken]
+        free_iter = iter(free_tables)
+        for i in range(num_matches):
+            if assigned[i] is None:
+                assigned[i] = next(free_iter)
+
+        return assigned
+
     def _generate_round_no_duplicates(self, teams):
         """Generate matches ensuring no team plays the same opponent twice"""
         available = list(teams)
-        matches_to_create = []
-        table_number = 0
-        
+        pairs = []
+
         while len(available) >= 2:
             team1 = available.pop(0)
             paired = False
-            
+
             # Try to find an opponent that team1 hasn't played yet
             for i, team2 in enumerate(available):
                 if not self.have_teams_played(team1.id, team2.id):
-                    table_number += 1
-                    matches_to_create.append((team1.id, team2.id, table_number))
+                    pairs.append((team1, team2))
                     available.pop(i)
                     paired = True
                     break
-            
+
             # If no valid opponent found, pair with the first available (duplicate match)
             if not paired and available:
-                table_number += 1
-                team2 = available.pop(0)
-                matches_to_create.append((team1.id, team2.id, table_number))
-        
-        # Create all matches
+                pairs.append((team1, available.pop(0)))
+
+        # Assign tables respecting fixed tables
+        table_numbers = self._assign_tables(pairs)
         next_round = self.get_current_round() + 1
-        for team1_id, team2_id, table_num in matches_to_create:
+        for (team1, team2), table_num in zip(pairs, table_numbers):
             match = Match(
-                team1_id=team1_id,
-                team2_id=team2_id,
+                team1_id=team1.id,
+                team2_id=team2.id,
                 table_number=table_num,
                 round_number=next_round,
                 tournament_id=self.id
-                )
-            db.session.add(match) 
+            )
+            db.session.add(match)
         db.session.commit()
         return True
 
     def generate_first_round_matches(self):
-        
         Match.query.filter_by(is_closed=False).update({'is_closed': True})
         db.session.commit()
 
         teams = self.get_teams()
         if len(teams) % 2 != 0:
-            return False  # Le nombre d'équipes doit être pair
+            return False
 
-        # Mélangez les équipes de manière aléatoire
         random.shuffle(teams)
-        table_number = 0
-
-        # Créez des matchs en appariant les équipes aléatoirement
-        for i in range(0, len(teams), 2):
-            table_number += 1
-            team1 = teams[i]
-            team2 = teams[i + 1]
-            tournament_id=self.id
-
-            match = Match(team1_id=team1.id, team2_id=team2.id, table_number=table_number, round_number=1, tournament_id=tournament_id)
-            
+        pairs = [(teams[i], teams[i + 1]) for i in range(0, len(teams), 2)]
+        table_numbers = self._assign_tables(pairs)
+        for (team1, team2), table_num in zip(pairs, table_numbers):
+            match = Match(team1_id=team1.id, team2_id=team2.id, table_number=table_num, round_number=1, tournament_id=self.id)
             db.session.add(match)
 
         db.session.commit()
@@ -271,7 +294,8 @@ class Tournament(db.Model):
         for team in teams:
             team_data = {'team_name': team.name,
                          'team_id': team.id,
-                        'team_points_for': team.points_for}
+                         'team_num': team.tournament_team_number,
+                         'team_points_for': team.points_for}
             for round_num in round_numbers:
                 # Lookup from map instead of querying
                 match = match_map.get((team.id, round_num))
