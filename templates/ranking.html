@@ -31,7 +31,7 @@
                         {% for team in teams %}
                         <tr>
                             <td>{{ loop.index }}</td>
-                            <td>{{ team.name }}</td>
+                            <td>#{{ team.id }} {{ team.name }}</td>
                             <td>{{ team.matches_played }}</td>
                             <td><strong>{{ team.soccer_points }}</strong></td>
                             <td>{{ team.points_for }}</td>
@@ -66,7 +66,7 @@
                         {% for team_score in teams_scores %}
                         <tr>
                             <td>{{ loop.index }}</td>
-                            <td>{{ team_score.team_name }}</td>
+                            <td>#{{ team_score.team_id }} {{ team_score.team_name }}</td>
                             <td><strong>{{ team_score.team_points_for }}</strong></td>
                             {% for round_num in round_numbers %}
                                 <td>

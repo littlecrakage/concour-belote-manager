@@ -29,8 +29,8 @@
                             <label for="match" class="form-label">Choisir un match non joué</label>
                             <select class="form-select" id="match" name="match_id" required>
                                 {% for match in unplayed_matches %}
-                                    <option value="{{ match.match_id }}" data-team1="{{ match.team1 }}" data-team2="{{ match.team2 }}">
-                                        {{ match.team1 }} vs {{ match.team2 }} (Table {{ match.table_number }})
+                                    <option value="{{ match.match_id }}" data-team1="#{{ match.team1_id }} {{ match.team1 }}" data-team2="#{{ match.team2_id }} {{ match.team2 }}">
+                                        #{{ match.team1_id }} {{ match.team1 }} vs #{{ match.team2_id }} {{ match.team2 }} (Table {{ match.table_number }})
                                     </option>
                                 {% endfor %}
                             </select>
@@ -97,8 +97,8 @@
                         <tbody>
                             {% for match in unplayed_matches %}
                                 <tr>
-                                    <td>{{ match.team1 }}</td>
-                                    <td>{{ match.team2 }}</td>
+                                    <td>#{{ match.team1_id }} {{ match.team1 }}</td>
+                                    <td>#{{ match.team2_id }} {{ match.team2 }}</td>
                                     <td>{{ match.table_number }}</td>
                                 </tr>
                             {% else %}
@@ -130,8 +130,8 @@
                         <tbody>
                             {% for match in played_matches %}
                                 <tr>
-                                    <td>{{ match.team1 }}</td>
-                                    <td>{{ match.team2 }}</td>
+                                    <td>#{{ match.team1_id }} {{ match.team1 }}</td>
+                                    <td>#{{ match.team2_id }} {{ match.team2 }}</td>
                                     <td>{{ match.score1 }} - {{ match.score2 }}</td>
                                     <td>{{ match.table_number }}</td>
                                     <td>{{ match.date }}</td>

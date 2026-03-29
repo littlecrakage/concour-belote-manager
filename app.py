@@ -250,6 +250,8 @@ def matches(slug):
         unplayed_matches.append({
             'team1': match.team1.name,
             'team2': match.team2.name,
+            'team1_id': match.team1.id,
+            'team2_id': match.team2.id,
             'match_id': match.id,
             'table_number': match.table_number
         })
@@ -261,11 +263,12 @@ def matches(slug):
         played_matches.append({
             'team1': match.team1.name,
             'team2': match.team2.name,
+            'team1_id': match.team1.id,
+            'team2_id': match.team2.id,
             'score1': match.score1,
             'score2': match.score2,
             'table_number': match.table_number,
             'date': match.date
-
         })
     
     played_matches_sorted = sorted(played_matches, key=lambda x: x['date'], reverse=True)
@@ -332,7 +335,8 @@ def admin(slug):
                 return redirect(url_for('admin', slug=slug))
 
             if tournament.add_team(team_name):
-                flash(f"L'équipe {team_name} a été ajoutée avec succès.", 'success')
+                new_team = Team.query.filter_by(name=team_name, tournament_id=tournament.id).first()
+                flash(f"L'équipe {team_name} (N°{new_team.id}) a été ajoutée avec succès.", 'success')
             else:
                 flash("Impossible d'ajouter l'équipe. Le tournoi a peut-être déjà commencé ou l'équipe existe déjà.", 'error')
             return redirect(url_for('admin', slug=slug))

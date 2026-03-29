@@ -48,7 +48,7 @@ class Tournament(db.Model):
     def get_unplayed_matches(self):
         return Match.query.filter_by(
             tournament_id=self.id
-        ).filter(Match.score1.is_(None)).all()
+        ).filter(Match.score1.is_(None)).order_by(Match.table_number).all()
 
     def get_played_matches(self):
         return Match.query.filter_by(

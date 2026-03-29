@@ -108,7 +108,7 @@
                             <label for="remove_team" class="form-label">Équipe à retirer</label>
                             <select class="form-select" id="remove_team" name="remove_team" required>
                                 {% for team in teams %}
-                                    <option value="{{ team.id }}">{{ team.name }}</option>
+                                    <option value="{{ team.id }}">#{{ team.id }} {{ team.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -123,6 +123,7 @@
                     <table class="table">
                         <thead>
                             <tr>
+                                <th>N°</th>
                                 <th>Équipe</th>
                                 <th>Joueurs</th>
                                 <th>Actions</th>
@@ -131,6 +132,7 @@
                         <tbody>
                             {% for team in teams %}
                                 <tr>
+                                    <td>#{{ team.id }}</td>
                                     <td>{{ team.name }}</td>
                                     <td>
                                         {% if team.players %}
