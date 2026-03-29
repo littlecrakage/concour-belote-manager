@@ -107,26 +107,21 @@ class Tournament(db.Model):
         return points
 
     def remove_team(self, team_id):
-        # Trouver l'équipe par son nom
         team = Team.query.filter_by(id=team_id, tournament_id=self.id).first()
         if not team:
-            return False  # Équipe non trouvée
+            return False, "Équipe introuvable."
 
-        # Vérifier si l'équipe a déjà joué des matchs
         if Match.query.filter(
-            ((Match.team1_id == team.id) | (Match.team2_id == team.id)) &
-            (Match.is_closed == True)
+            (Match.team1_id == team.id) | (Match.team2_id == team.id)
         ).first():
-            return False  # L'équipe a déjà joué des matchs
+            return False, "Impossible de supprimer cette équipe car elle a des matchs associés (joués ou à venir)."
 
-        # Supprimer explicitement les joueurs de l'équipe
-        for player in team.players[:]:  # Utilisez une copie de la liste pour éviter les problèmes d'itération
+        for player in team.players[:]:
             db.session.delete(player)
 
-        # Supprimer l'équipe
         db.session.delete(team)
         db.session.commit()
-        return True
+        return True, None
 
     def reset_tournament(self):
         Match.query.filter_by(tournament_id=self.id).delete()

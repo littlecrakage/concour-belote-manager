@@ -347,10 +347,11 @@ def admin(slug):
                 flash("Équipe non spécifiée.", 'error')
                 return redirect(url_for('admin', slug=slug))
 
-            if tournament.remove_team(team_id):
+            success, error_msg = tournament.remove_team(team_id)
+            if success:
                 flash("L'équipe a été supprimée avec succès.", 'success')
             else:
-                flash("Impossible de supprimer l'équipe.", 'error')
+                flash(error_msg, 'error')
             return redirect(url_for('admin', slug=slug))
 
 
