@@ -51,17 +51,26 @@ from models.user import User
 from sqlalchemy.orm import aliased 
 
 with app.app_context():
-    from flask_migrate import upgrade as flask_db_upgrade, stamp as flask_db_stamp
+    from flask_migrate import upgrade as flask_db_upgrade
     from sqlalchemy import inspect, text
 
     inspector = inspect(db.engine)
     if 'alembic_version' not in inspector.get_table_names():
-        # DB exists but was never managed by Alembic — stamp at current state before upgrading
-        flask_db_stamp('6838bf99b815')
+        # DB exists but was never tracked by Alembic — create the table and stamp
+        db.session.execute(text(
+            "CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL PRIMARY KEY)"
+        ))
+        db.session.execute(text(
+            "INSERT INTO alembic_version (version_num) VALUES ('6838bf99b815')"
+        ))
+        db.session.commit()
     else:
         version = db.session.execute(text('SELECT version_num FROM alembic_version')).fetchone()
         if not version:
-            flask_db_stamp('6838bf99b815')
+            db.session.execute(text(
+                "INSERT INTO alembic_version (version_num) VALUES ('6838bf99b815')"
+            ))
+            db.session.commit()
 
     flask_db_upgrade()
     db.create_all()
