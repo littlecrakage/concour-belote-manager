@@ -387,6 +387,29 @@ def admin(slug):
                            matches_not_closed=matches_not_closed,
                            tournament_started=tournament_started)
 
+@app.route('/t/<slug>/fix_round_numbers', methods=['POST'])
+@tournament_admin_required
+def fix_round_numbers_route(slug):
+    tournament = Tournament.query.filter_by(slug=slug).first_or_404()
+    matches_with_zero = Match.query.filter_by(
+        tournament_id=tournament.id, round_number=0
+    ).order_by(Match.id).all()
+
+    if not matches_with_zero:
+        flash("Aucun match avec round_number=0 trouvé.", 'info')
+        return redirect(url_for('admin', slug=slug))
+
+    num_teams = Team.query.filter_by(tournament_id=tournament.id).count()
+    matches_per_round = num_teams // 2
+    for i, match in enumerate(matches_with_zero):
+        match.round_number = (i // matches_per_round) + 1
+
+    db.session.commit()
+    total_rounds = (len(matches_with_zero) + matches_per_round - 1) // matches_per_round
+    flash(f"{len(matches_with_zero)} matchs corrigés sur {total_rounds} tours.", 'success')
+    return redirect(url_for('admin', slug=slug))
+
+
 @app.route('/t/<slug>/update_match_result/<int:match_id>', methods=['POST'])
 @tournament_admin_required
 def update_match_result(slug, match_id):
@@ -544,6 +567,33 @@ def export_html(slug):
                            teams_scores=teams_scores,
                            round_numbers=round_numbers,
                            played_matches=played_matches_sorted)
+
+@app.cli.command("fix_round_numbers")
+def fix_round_numbers():
+    """Reassign round_number=0 matches with correct round numbers (1, 2, 3…)."""
+    tournaments = Tournament.query.all()
+    for tournament in tournaments:
+        matches_with_zero = Match.query.filter_by(
+            tournament_id=tournament.id, round_number=0
+        ).order_by(Match.id).all()
+
+        if not matches_with_zero:
+            print(f"[{tournament.slug}] No round_number=0 matches, skipping.")
+            continue
+
+        num_teams = Team.query.filter_by(tournament_id=tournament.id).count()
+        if num_teams < 2:
+            print(f"[{tournament.slug}] Not enough teams, skipping.")
+            continue
+
+        matches_per_round = num_teams // 2
+        for i, match in enumerate(matches_with_zero):
+            match.round_number = (i // matches_per_round) + 1
+
+        db.session.commit()
+        total_rounds = (len(matches_with_zero) + matches_per_round - 1) // matches_per_round
+        print(f"[{tournament.slug}] Fixed {len(matches_with_zero)} matches → {total_rounds} rounds.")
+
 
 @app.cli.command("cleanup_expired")
 def cleanup_expired():

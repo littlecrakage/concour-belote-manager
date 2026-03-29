@@ -32,6 +32,20 @@
                     </form>
                 </div>
             </div>
+            <div class="card mb-4 border-danger">
+                <div class="card-header bg-danger text-white fw-bold">⚠️ Zone Dangereuse</div>
+                <div class="card-body">
+                    <h5 class="card-title">Corriger les numéros de tour</h5>
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Attention !</strong> Cette action recalcule les numéros de tour de tous les matchs à partir de leur ordre d'insertion.
+                        Elle est destinée à corriger les tournois créés avant le correctif (tours affichés comme « Tour 0 »).
+                        <br><strong>Ne l'utilisez que si le classement n'affiche pas les bons tours.</strong>
+                    </div>
+                    <form method="POST" action="{{ url_for('fix_round_numbers_route', slug=tournament.slug) }}" onsubmit="return confirm('Êtes-vous sûr ? Cette action modifie les numéros de tour de tous les matchs.')">
+                        <button type="submit" class="btn btn-danger">Corriger les numéros de tour</button>
+                    </form>
+                </div>
+            </div>
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Commencer le Tournoi</h5>
